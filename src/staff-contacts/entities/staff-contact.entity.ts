@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export enum ContactStatus {
+export enum CONTACT_STATUS {
   ENABLED = 'enabled',
   DISABLED = 'disabled',
   NONE = 'none',
@@ -41,8 +41,8 @@ export class StaffContact {
   @Column({ default: '' })
   email: string;
 
-  @Column({ default: ContactStatus.ENABLED })
-  status: ContactStatus;
+  @Column({ default: CONTACT_STATUS.ENABLED })
+  status: CONTACT_STATUS;
 
   @Column({ nullable: true })
   birthDate: string;

@@ -1,4 +1,4 @@
-import { Module, Post } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
@@ -16,6 +16,11 @@ import { CalendarEventCategory } from './calendar-event-category/entities/calend
 import { PostCategory } from './post-categories/entities/post-category.entity';
 import { Room } from './rooms/entities/room.entity';
 import { StaffContact } from './staff-contacts/entities/staff-contact.entity';
+import { UsersModule } from './users/users.module';
+import { User } from 'users/entities/user.entity';
+import { Post } from 'posts/entities/post.entity';
+import { MeetingEventsModule } from './meeting-events/meeting-events.module';
+import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 
 @Module({
   imports: [
@@ -30,6 +35,8 @@ import { StaffContact } from './staff-contacts/entities/staff-contact.entity';
         PostCategory,
         Room,
         StaffContact,
+        User,
+        MeetingEvent,
       ],
       database: 'db.sqlite',
       synchronize: true,
@@ -39,9 +46,12 @@ import { StaffContact } from './staff-contacts/entities/staff-contact.entity';
     AuthModule,
     CalendarEventModule,
     CalendarEventCategoryModule,
+    PostsModule,
     PostCategoriesModule,
     StaffContactsModule,
     RoomsModule,
+    UsersModule,
+    MeetingEventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

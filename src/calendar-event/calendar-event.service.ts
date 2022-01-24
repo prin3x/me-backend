@@ -3,7 +3,8 @@ import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { CalendarEvent } from './entities/calendar-event.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, MoreThan, Repository } from 'typeorm';
+import { ListQueryCalendarDTO } from 'app.dto';
 
 @Injectable()
 export class CalendarEventService {
@@ -16,8 +17,11 @@ export class CalendarEventService {
     return await this.repo.findOne(_id);
   }
 
-  async findAll() {
-    return await this.repo.find();
+  async findAll(q: ListQueryCalendarDTO): Promise<CalendarEvent[]> {
+    return await this.repo.find({
+      start: MoreThan(q.startDate),
+      end: LessThan(q.endDate),
+    });
   }
 
   async create(_calendarEvent: CreateCalendarEventDto) {
@@ -26,9 +30,12 @@ export class CalendarEventService {
     const calendarEventInstance = new CalendarEvent();
     calendarEventInstance.title = _calendarEvent.title;
     calendarEventInstance.description = _calendarEvent.description;
-    calendarEventInstance.start = _calendarEvent.start;
-    calendarEventInstance.end = _calendarEvent.end;
+    calendarEventInstance.start = new Date(_calendarEvent.start);
+    calendarEventInstance.end = new Date(_calendarEvent.end);
+    calendarEventInstance.allDay = !!_calendarEvent.allDay;
     calendarEventInstance.categoryId = _calendarEvent.categoryId;
+
+    console.log(calendarEventInstance, 'calendarEventInstance');
 
     try {
       res = await this.repo.save(calendarEventInstance);
@@ -46,8 +53,9 @@ export class CalendarEventService {
     calendarEventInstance.id = id;
     calendarEventInstance.title = _calendarEvent.title;
     calendarEventInstance.description = _calendarEvent.description;
-    calendarEventInstance.start = _calendarEvent.start;
-    calendarEventInstance.end = _calendarEvent.end;
+    calendarEventInstance.start = new Date(_calendarEvent.start);
+    calendarEventInstance.end = new Date(_calendarEvent.end);
+    calendarEventInstance.allDay = !!_calendarEvent.allDay;
     calendarEventInstance.categoryId = _calendarEvent.categoryId;
 
     try {

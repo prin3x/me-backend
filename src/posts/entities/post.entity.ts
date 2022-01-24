@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export enum PostStatus {
+export enum POST_STATUS {
   ENABLED = 'enabled',
   DISABLED = 'disabled',
   NONE = 'none',
@@ -19,14 +19,17 @@ export class Post {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column()
   title: string;
 
   @Column()
   content: string;
 
-  @Column({ default: PostStatus.ENABLED })
-  status: PostStatus;
+  @Column({ default: POST_STATUS.ENABLED })
+  status: POST_STATUS;
 
   @Column({ default: 0 })
   adminId: number;

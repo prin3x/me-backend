@@ -1,15 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { CalendarEventCategoryService } from './calendar-event-category.service';
 import { CreateCalendarEventCategoryDto } from './dto/create-calendar-event-category.dto';
 import { UpdateCalendarEventCategoryDto } from './dto/update-calendar-event-category.dto';
 
 @Controller('calendar-event-category')
 export class CalendarEventCategoryController {
-  constructor(private readonly calendarEventCategoryService: CalendarEventCategoryService) {}
+  constructor(
+    private readonly calendarEventCategoryService: CalendarEventCategoryService,
+  ) {}
 
   @Post()
-  create(@Body() createCalendarEventCategoryDto: CreateCalendarEventCategoryDto) {
-    return this.calendarEventCategoryService.create(createCalendarEventCategoryDto);
+  create(
+    @Body() createCalendarEventCategoryDto: CreateCalendarEventCategoryDto,
+  ) {
+    return this.calendarEventCategoryService.create(
+      createCalendarEventCategoryDto,
+    );
   }
 
   @Get()
@@ -23,8 +37,14 @@ export class CalendarEventCategoryController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCalendarEventCategoryDto: UpdateCalendarEventCategoryDto) {
-    return this.calendarEventCategoryService.update(+id, updateCalendarEventCategoryDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateCalendarEventCategoryDto: UpdateCalendarEventCategoryDto,
+  ) {
+    return this.calendarEventCategoryService.update(
+      +id,
+      updateCalendarEventCategoryDto,
+    );
   }
 
   @Delete(':id')

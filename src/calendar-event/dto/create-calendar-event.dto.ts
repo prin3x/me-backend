@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCalendarEventDto {
   @IsString()
@@ -13,6 +13,9 @@ export class CreateCalendarEventDto {
 
   @IsString()
   end: string;
+
+  @IsBoolean()
+  allDay: boolean;
 
   @IsNumber()
   categoryId: number;

@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { Room } from './entities/room.entity';
 
 @Injectable()
 export class RoomsService {
-  create(createRoomDto: CreateRoomDto) {
-    return 'This action adds a new room';
+  constructor(
+    @InjectRepository(Room)
+    private repo: Repository<Room>,
+  ) {}
+
+  async create(createRoomDto: CreateRoomDto): Promise<Room> {
+    const newRoom = new Room();
+    newRoom.name = createRoomDto.name;
+    newRoom.imageUrl = createRoomDto.imageUrl;
+    newRoom.floor = createRoomDto.floor;
+    newRoom.description = createRoomDto.description;
+
+    try {
+      await this.repo.save(newRoom);
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+
+    return newRoom;
   }
 
-  findAll() {
-    return `This action returns all rooms`;
+  async findAll(): Promise<Room[]> {
+    return await this.repo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} room`;
+  async findOne(id: number): Promise<Room> {
+    return await this.repo.findOne(id);
   }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
-    return `This action updates a #${id} room`;
+  async update(id: number, updateRoomDto: UpdateRoomDto) {
+    let newRoom;
+    try {
+      newRoom = await this.findOne(id);
+      if (!newRoom) throw new NotFoundException();
+
+      newRoom.name = updateRoomDto.name;
+      newRoom.imageUrl = updateRoomDto.imageUrl;
+      newRoom.floor = updateRoomDto.floor;
+      newRoom.description = updateRoomDto.description;
+
+      await this.repo.save(newRoom);
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+
+    return newRoom;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} room`;
+  async remove(id: number) {
+    return await this.repo.delete(id);
   }
 }

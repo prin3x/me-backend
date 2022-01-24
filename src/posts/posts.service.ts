@@ -1,23 +1,73 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { nanoid } from 'nanoid';
+import * as path from 'path';
+import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostsService {
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
+  constructor(
+    @InjectRepository(Post)
+    private repo: Repository<Post>,
+  ) {}
+  async create(createPostDto: CreatePostDto) {
+    let res;
+    const pathFile = path.join(
+      process.cwd(),
+      `uploads/temp/${createPostDto.image.filename}`,
+    );
+    const newsInsance = new Post();
+    newsInsance.title = createPostDto.title;
+    newsInsance.content = createPostDto.content;
+    newsInsance.categoryId = createPostDto.categoryId;
+    newsInsance.imageUrl = pathFile;
+    // mock
+    newsInsance.adminId = 1;
+    newsInsance.slug = `${createPostDto.title.split(' ').join('-')}-${nanoid(
+      6,
+    )}`;
+
+    try {
+      res = await this.repo.save(newsInsance);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findAll() {
+    return await this.repo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findByCategoryId(_id: string) {
+    return await this.repo.find({ where: { categoryId: _id } });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async findOne(slug: string) {
+    return await this.repo.findOne({ slug });
+  }
+
+  async update(slug: string, updatePostDto: UpdatePostDto) {
+    let res;
+
+    const newsInsance = await this.findOne(slug);
+    newsInsance.title = updatePostDto.title;
+    newsInsance.content = updatePostDto.content;
+    newsInsance.categoryId = updatePostDto.categoryId;
+    // mock
+    newsInsance.adminId = 1;
+
+    try {
+      res = await this.repo.save(newsInsance);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
   }
 
   remove(id: number) {

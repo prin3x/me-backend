@@ -1,3 +1,4 @@
+import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 import {
   Column,
   CreateDateColumn,
@@ -13,7 +14,13 @@ export class Room {
   id: number;
 
   @Column({ default: '' })
-  room: string;
+  imageUrl: string;
+
+  @Column()
+  name: string;
+
+  @Column({ default: '', nullable: true })
+  description: string;
 
   @Column({ nullable: true })
   floor: number;
@@ -24,7 +31,9 @@ export class Room {
   @UpdateDateColumn()
   updatedDate: Date;
 
-  //   @OneToMany(() => CalendarEvent, (_calendar) => _calendar.categoryDetail)
-  //   calendarEventDetail: CalendarEvent[];
-  // }
+  @Column({ default: 0 })
+  createdBy: number;
+
+  @OneToMany(() => MeetingEvent, (_room) => _room.roomId)
+  meetingEventDetail: MeetingEvent[];
 }

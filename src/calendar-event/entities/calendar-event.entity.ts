@@ -1,3 +1,5 @@
+import { Admin } from 'admins/entities/admin.entity';
+import { CalendarEventCategory } from 'calendar-event-category/entities/calendar-event-category.entity';
 import {
   Column,
   CreateDateColumn,
@@ -20,10 +22,13 @@ export class CalendarEvent {
   description: string;
 
   @Column({ default: '' })
-  start: string;
+  start: Date;
 
   @Column({ default: '' })
-  end: string;
+  end: Date;
+
+  @Column({ nullable: true })
+  allDay: boolean;
 
   @CreateDateColumn()
   createdDate: Date;
@@ -40,20 +45,13 @@ export class CalendarEvent {
   @Column({ nullable: true })
   roomIds: number;
 
-  //   @ManyToOne(() => Admin, { nullable: true })
-  //   adminDetail: number;
+  @ManyToOne(() => Admin, { nullable: true })
+  adminDetail: number;
 
-  //   @ManyToOne(
-  //     () => CalendarEventCategory,
-  //     (_calendarCategory) => _calendarCategory.calendarEventDetail,
-  //   )
-  //   @JoinColumn({ name: 'category_id' })
-  //   categoryDetail: CalendarEventCategory;
-
-  // @ManyToOne(
-  //   () => CalendarEventCategory,
-  //   (_calendarCategory) => _calendarCategory.calendarEventDetail,
-  // )
-  // @JoinColumn({ name: 'roomIds' })
-  // roomDetail: Rooms;
+  @ManyToOne(
+    () => CalendarEventCategory,
+    (_calendarCategory) => _calendarCategory.calendarEventDetail,
+  )
+  @JoinColumn({ name: 'categoryId' })
+  categoryDetail: CalendarEventCategory;
 }

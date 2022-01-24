@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import { ListQueryCalendarDTO } from 'app.dto';
 import { CalendarEventService } from './calendar-event.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
@@ -13,8 +23,8 @@ export class CalendarEventController {
   }
 
   @Get()
-  findAll() {
-    return this.calendarEventService.findAll();
+  findAll(@Query() q: ListQueryCalendarDTO) {
+    return this.calendarEventService.findAll(q);
   }
 
   @Get(':id')
@@ -23,7 +33,10 @@ export class CalendarEventController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCalendarEventDto: UpdateCalendarEventDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCalendarEventDto: UpdateCalendarEventDto,
+  ) {
     return this.calendarEventService.update(+id, updateCalendarEventDto);
   }
 

@@ -1,3 +1,4 @@
+import { CalendarEvent } from 'calendar-event/entities/calendar-event.entity';
 import {
   Column,
   CreateDateColumn,
@@ -21,7 +22,6 @@ export class CalendarEventCategory {
   @UpdateDateColumn()
   updatedDate: Date;
 
-//   @OneToMany(() => CalendarEvent, (_calendar) => _calendar.categoryDetail)
-//   calendarEventDetail: CalendarEvent[];
-// }
+  @OneToMany(() => CalendarEvent, (_calendar) => _calendar.categoryId)
+  calendarEventDetail: CalendarEvent[];
 }

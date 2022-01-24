@@ -6,10 +6,12 @@ import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
-import { AdminsModule } from 'src/admins/admins.module';
+import { AdminsModule } from 'admins/admins.module';
+import { UsersModule } from 'users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     AdminsModule,
     PassportModule,
     JwtModule.register({
