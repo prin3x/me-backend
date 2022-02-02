@@ -21,9 +21,13 @@ import { User } from 'users/entities/user.entity';
 import { Post } from 'posts/entities/post.entity';
 import { MeetingEventsModule } from './meeting-events/meeting-events.module';
 import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
+import { S3Service } from 's3/s3.service';
+import { ConfigModule } from '@nestjs/config';
+import configuration from 'config/configuration';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
       entities: [
@@ -52,6 +56,7 @@ import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
     RoomsModule,
     UsersModule,
     MeetingEventsModule,
+    S3Service,
   ],
   controllers: [AppController],
   providers: [AppService],

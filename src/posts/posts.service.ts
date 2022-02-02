@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
+import { S3Service } from 's3/s3.service';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -12,18 +13,15 @@ export class PostsService {
   constructor(
     @InjectRepository(Post)
     private repo: Repository<Post>,
+    private s3Service: S3Service,
   ) {}
   async create(createPostDto: CreatePostDto) {
     let res;
-    const pathFile = path.join(
-      process.cwd(),
-      `uploads/temp/${createPostDto.image.filename}`,
-    );
+
     const newsInsance = new Post();
     newsInsance.title = createPostDto.title;
     newsInsance.content = createPostDto.content;
     newsInsance.categoryId = createPostDto.categoryId;
-    newsInsance.imageUrl = pathFile;
     // mock
     newsInsance.adminId = 1;
     newsInsance.slug = `${createPostDto.title.split(' ').join('-')}-${nanoid(
@@ -31,6 +29,9 @@ export class PostsService {
     )}`;
 
     try {
+      const key: any = await this.s3Service.uploadImagesS3(createPostDto.image);
+
+      newsInsance.imageUrl = key;
       res = await this.repo.save(newsInsance);
     } catch (e) {
       throw Error(e);

@@ -21,15 +21,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/temp',
-        filename: editFileName,
-      }),
-      fileFilter: fileFilter,
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image'))
   create(@UploadedFile() image: Express.Multer.File, @Body() createPostDto) {
     const set: CreatePostDto = {
       ...createPostDto,
