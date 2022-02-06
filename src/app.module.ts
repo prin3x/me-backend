@@ -22,28 +22,38 @@ import { Post } from 'posts/entities/post.entity';
 import { MeetingEventsModule } from './meeting-events/meeting-events.module';
 import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 import { S3Service } from 's3/s3.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'config/configuration';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      entities: [
-        Admin,
-        Post,
-        Admin,
-        CalendarEvent,
-        CalendarEventCategory,
-        PostCategory,
-        Room,
-        StaffContact,
-        User,
-        MeetingEvent,
-      ],
-      database: 'db.sqlite',
-      synchronize: true,
+    ScheduleModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.host'),
+        port: configService.get('database.port'),
+        username: configService.get('database.user'),
+        password: configService.get('database.password'),
+        database: configService.get('database.database'),
+        synchronize: true,
+        entities: [
+          Admin,
+          Post,
+          Admin,
+          CalendarEvent,
+          CalendarEventCategory,
+          PostCategory,
+          Room,
+          StaffContact,
+          User,
+          MeetingEvent,
+        ],
+      }),
     }),
     PostsModule,
     AdminsModule,

@@ -17,7 +17,7 @@ export class StaffContact {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: 'profile_pic_url' })
+  @Column({ default: '' })
   profilePicUrl: string;
 
   @Column({ default: '' })

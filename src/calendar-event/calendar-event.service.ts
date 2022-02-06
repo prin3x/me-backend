@@ -5,23 +5,79 @@ import { CalendarEvent } from './entities/calendar-event.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { ListQueryCalendarDTO } from 'app.dto';
+import { StaffContactsService } from 'staff-contacts/staff-contacts.service';
+import { nanoid } from 'nanoid';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
+
+export interface HolidaysData {
+  HolidayWeekDay: string;
+  HolidayWeekDayThai: string;
+  Date: string;
+  DateThai: string;
+  HolidayDescription: string;
+  HolidayDescriptionThai: string;
+}
+
+export interface HolidaysResponseTimestamps {
+  api: string;
+  timestamp: string;
+  data: HolidaysData[];
+}
+
+export interface HolidaysResponseFromBOT {
+  result: HolidaysResponseTimestamps;
+}
 
 @Injectable()
 export class CalendarEventService {
   constructor(
     @InjectRepository(CalendarEvent)
     private repo: Repository<CalendarEvent>,
+    private contactService: StaffContactsService,
+    private config: ConfigService,
   ) {}
 
   async findOne(_id) {
     return await this.repo.findOne(_id);
   }
 
-  async findAll(q: ListQueryCalendarDTO): Promise<CalendarEvent[]> {
-    return await this.repo.find({
-      start: MoreThan(q.startDate),
-      end: LessThan(q.endDate),
-    });
+  async findAll(opt: ListQueryCalendarDTO) {
+    let rfe, rtn, rtc;
+
+    try {
+      rfe = await this.repo.find({
+        start: MoreThan(opt.startDate),
+        end: LessThan(opt.endDate),
+      });
+      const set = {} as any;
+      set.startDate = opt.startDate;
+      rtc = await this.contactService.findAllBirthday(set);
+      const tempRtc = rtc?.items.map((_item) => {
+        let bd = _item.birthDate.split('-');
+        bd[0] = '2022';
+        bd = bd.join('-');
+        return {
+          id: nanoid(),
+          title: `Birthday 's ${_item.nickname}`,
+          description: '',
+          start: bd,
+          end: bd,
+          allDay: true,
+          createdDate: _item?.createdDate,
+          updatedDate: _item?.updatedDate,
+          createdBy: 0,
+          categoryId: 3,
+          roomIds: null,
+        };
+      });
+      rtn = [...rfe, ...tempRtc];
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e);
+    }
+
+    return rtn;
   }
 
   async create(_calendarEvent: CreateCalendarEventDto) {
@@ -34,8 +90,6 @@ export class CalendarEventService {
     calendarEventInstance.end = new Date(_calendarEvent.end);
     calendarEventInstance.allDay = !!_calendarEvent.allDay;
     calendarEventInstance.categoryId = _calendarEvent.categoryId;
-
-    console.log(calendarEventInstance, 'calendarEventInstance');
 
     try {
       res = await this.repo.save(calendarEventInstance);
@@ -84,5 +138,44 @@ export class CalendarEventService {
     }
 
     return res;
+  }
+
+  async saveHolidays() {
+    const config = {
+      method: 'GET',
+      url: 'https://apigw1.bot.or.th/bot/public/financial-institutions-holidays/',
+      qs: { year: '2022' },
+      headers: {
+        'X-IBM-Client-Id': this.config.get('botApiKey'),
+        accept: 'application/json',
+      },
+    };
+
+    const botRes = await axios(config as any)
+      .then((res: any) => res.data)
+      .catch((e) => console.error(e));
+
+    const res: HolidaysResponseFromBOT = botRes;
+    const data = res.result.data;
+
+    const mapData = data.map((_item) => {
+      return {
+        title: _item.HolidayDescriptionThai,
+        description: _item.HolidayDescriptionThai,
+        start: new Date(_item.Date).toISOString(),
+        end: new Date(_item.Date).toISOString(),
+        allDay: true,
+        categoryId: 4,
+      };
+    });
+
+    try {
+      for (let i = 0; i < mapData.length; i++) {
+        // await this.create(mapData[i]);
+      }
+    } catch (e) {
+      console.error(e);
+      throw new BadRequestException(e);
+    }
   }
 }

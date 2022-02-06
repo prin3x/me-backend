@@ -3,6 +3,9 @@ import { CONTACT_STATUS } from 'staff-contacts/entities/staff-contact.entity';
 
 export class CreateStaffContactDto {
   @IsOptional()
+  image: any;
+
+  @IsOptional()
   @IsString()
   name: string;
 

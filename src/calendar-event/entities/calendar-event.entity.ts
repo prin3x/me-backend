@@ -21,10 +21,10 @@ export class CalendarEvent {
   @Column({ default: '', nullable: true })
   description: string;
 
-  @Column({ default: '' })
+  @Column()
   start: Date;
 
-  @Column({ default: '' })
+  @Column()
   end: Date;
 
   @Column({ nullable: true })
