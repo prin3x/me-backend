@@ -66,7 +66,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RoomsModule,
     UsersModule,
     MeetingEventsModule,
-    S3Service,
+    // S3Service,
   ],
   controllers: [AppController],
   providers: [AppService],
