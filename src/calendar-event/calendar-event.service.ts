@@ -38,6 +38,11 @@ export class CalendarEventService {
     private config: ConfigService,
   ) {}
 
+  /**
+   * Find one document by its _id
+   * @param _id - The id of the document to find.
+   * @returns The promise of the findOne method.
+   */
   async findOne(_id) {
     return await this.repo.findOne(_id);
   }
