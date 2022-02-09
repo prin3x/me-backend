@@ -1,9 +1,9 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateRoomDto {
   @IsOptional()
   @IsString()
-  imageUrl: string;
+  image: string;
 
   @IsString()
   name: string;
@@ -11,6 +11,6 @@ export class CreateRoomDto {
   @IsString()
   description: string;
 
-  @IsNumber()
-  floor: number;
+  @IsString()
+  floor: string;
 }

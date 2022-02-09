@@ -22,10 +22,10 @@ export class MeetingEvent {
   description: string;
 
   @Column()
-  start: string;
+  start: Date;
 
   @Column()
-  end: string;
+  end: Date;
 
   @CreateDateColumn()
   createdDate: Date;

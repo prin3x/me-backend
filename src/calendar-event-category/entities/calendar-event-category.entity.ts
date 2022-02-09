@@ -4,17 +4,14 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 export class CalendarEventCategory {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ default: '' })
-  category: string;
+  @PrimaryColumn()
+  title: string;
 
   @CreateDateColumn()
   createdDate: Date;
@@ -22,6 +19,6 @@ export class CalendarEventCategory {
   @UpdateDateColumn()
   updatedDate: Date;
 
-  @OneToMany(() => CalendarEvent, (_calendar) => _calendar.categoryId)
+  @OneToMany(() => CalendarEvent, (_calendar) => _calendar.categoryName)
   calendarEventDetail: CalendarEvent[];
 }

@@ -1,15 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createRoomDto: any,
+  ) {
+    const set: CreateRoomDto = {
+      ...createRoomDto,
+      image,
+    };
+    return this.roomsService.create(set);
   }
 
   @Get()

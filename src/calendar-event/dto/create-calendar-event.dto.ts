@@ -17,6 +17,6 @@ export class CreateCalendarEventDto {
   @IsBoolean()
   allDay: boolean;
 
-  @IsNumber()
-  categoryId: number;
+  @IsString()
+  categoryName: string;
 }

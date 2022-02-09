@@ -8,12 +8,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AdminsModule } from 'admins/admins.module';
 import { UsersModule } from 'users/users.module';
+import { StaffContact } from 'staff-contacts/entities/staff-contact.entity';
+import { StaffContactsModule } from 'staff-contacts/staff-contacts.module';
 
 @Module({
   imports: [
     UsersModule,
     AdminsModule,
     PassportModule,
+    StaffContactsModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '10d' },

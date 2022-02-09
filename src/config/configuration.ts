@@ -1,12 +1,13 @@
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 4000,
   database: {
-    host: process.env.POSTGRES_HOST,
-    port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DATABASE,
-    migration: process.env.POSTGRES_MIGRATION,
+    host: process.env.MYSQL_HOST,
+    port: parseInt(process.env.MYSQL_PORT, 10) || 5432,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    migration: process.env.MYSQL_MIGRATION,
+    schema: process.env.MYSQL_DROP_SCHEMA,
   },
   s3: {
     awsAccessKeyID: process.env.AWS_ACCESS_KEY_ID,

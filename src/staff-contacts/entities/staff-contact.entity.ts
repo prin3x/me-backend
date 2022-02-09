@@ -24,6 +24,9 @@ export class StaffContact {
   name: string;
 
   @Column({ default: '' })
+  nameTH: string;
+
+  @Column({ default: '' })
   nickname: string;
 
   @Column({ default: '' })
@@ -41,11 +44,20 @@ export class StaffContact {
   @Column({ default: '' })
   email: string;
 
+  @Column({ default: '' })
+  position: string;
+
+  @Column({ default: '' })
+  staffId: string;
+
   @Column({ default: CONTACT_STATUS.ENABLED })
   status: CONTACT_STATUS;
 
   @Column({ nullable: true })
   birthDate: string;
+
+  @Column()
+  hash: string;
 
   @Column({ default: 0 })
   createdBy: number;

@@ -14,7 +14,7 @@ export class CalendarEventCategoryService {
 
   async create(createCalendarEventCategoryDto: CreateCalendarEventCategoryDto) {
     const category = new CalendarEventCategory();
-    category.category = createCalendarEventCategoryDto.category;
+    category.title = createCalendarEventCategoryDto.title;
 
     return await this.repo.save(category);
   }

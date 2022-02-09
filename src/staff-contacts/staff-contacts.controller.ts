@@ -44,7 +44,7 @@ export class StaffContactsController {
   }
 
   @Get('/birthday')
-  findAllBirthDay(@Query() q: ListQueryParamsContactDTO){
+  findAllBirthDay(@Query() q: ListQueryParamsContactDTO) {
     const queryString = this.staffContactsService.parseQueryString(q);
     return this.staffContactsService.findAllBirthday(queryString);
   }

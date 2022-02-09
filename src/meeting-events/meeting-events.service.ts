@@ -20,8 +20,8 @@ export class MeetingEventsService {
     const newEvent = new MeetingEvent();
     newEvent.title = createMeetingEventDto.title;
     newEvent.description = createMeetingEventDto.description;
-    newEvent.start = createMeetingEventDto.start;
-    newEvent.end = createMeetingEventDto.end;
+    newEvent.start = new Date(createMeetingEventDto.start);
+    newEvent.end = new Date(createMeetingEventDto.end);
     newEvent.roomId = createMeetingEventDto.roomId;
 
     try {

@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateCalendarEventDto } from 'calendar-event/dto/create-calendar-event.dto';
 import { S3Service } from 's3/s3.service';
 import { Repository } from 'typeorm';
 import { CreateStaffContactDto } from './dto/create-staff-contact.dto';
@@ -31,14 +30,8 @@ export class StaffContactsService {
     staffInstance.name = createStaffContactDto.name;
     staffInstance.nickname = createStaffContactDto.nickname;
     staffInstance.birthDate = createStaffContactDto.birthDate;
+    staffInstance.hash = createStaffContactDto.email;
 
-    const birtDayEvent = new CreateCalendarEventDto();
-    birtDayEvent.title = `${createStaffContactDto.name}'s Birtday`;
-    birtDayEvent.description = '';
-    birtDayEvent.start = createStaffContactDto.birthDate;
-    birtDayEvent.end = createStaffContactDto.birthDate;
-    birtDayEvent.allDay = true;
-    birtDayEvent.categoryId = 3;
     // mock
     staffInstance.createdBy = 1;
 
@@ -87,7 +80,7 @@ export class StaffContactsService {
   async findAllBirthday(opt: ListBasicOperationContact) {
     let res;
 
-    const month = `${moment(opt.startDate).month() + 1}`.padStart(2, '0');
+    const month = moment(opt.startDate).month() + 1;
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
@@ -95,7 +88,7 @@ export class StaffContactsService {
         // .andWhere('StaffContact.department LIKE :department', {
         //   department: `%${opt.department}%`,
         // })
-        .andWhere('strftime("%m", StaffContact.birthDate) like :month', {
+        .andWhere('MONTH(StaffContact.birthDate) = :month', {
           month,
         })
         .skip(opt.skip)

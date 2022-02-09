@@ -23,7 +23,7 @@ export class Room {
   description: string;
 
   @Column({ nullable: true })
-  floor: number;
+  floor: string;
 
   @CreateDateColumn()
   createdDate: Date;

@@ -72,7 +72,7 @@ export class CalendarEventService {
           createdDate: _item?.createdDate,
           updatedDate: _item?.updatedDate,
           createdBy: 0,
-          categoryId: 3,
+          categoryName: 'birthday',
           roomIds: null,
         };
       });
@@ -94,7 +94,7 @@ export class CalendarEventService {
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
     calendarEventInstance.allDay = !!_calendarEvent.allDay;
-    calendarEventInstance.categoryId = _calendarEvent.categoryId;
+    calendarEventInstance.categoryName = _calendarEvent.categoryName;
 
     try {
       res = await this.repo.save(calendarEventInstance);
@@ -115,7 +115,7 @@ export class CalendarEventService {
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
     calendarEventInstance.allDay = !!_calendarEvent.allDay;
-    calendarEventInstance.categoryId = _calendarEvent.categoryId;
+    calendarEventInstance.categoryName = _calendarEvent.categoryName;
 
     try {
       res = await this.repo.save(calendarEventInstance);

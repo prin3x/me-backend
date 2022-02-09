@@ -34,7 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        type: 'postgres',
+        type: 'mysql',
         host: configService.get('database.host'),
         port: configService.get('database.port'),
         username: configService.get('database.user'),
@@ -66,7 +66,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RoomsModule,
     UsersModule,
     MeetingEventsModule,
-    // S3Service,
+    S3Service,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -40,7 +40,7 @@ export class CalendarEvent {
   createdBy: number;
 
   @Column()
-  categoryId: number;
+  categoryName: string;
 
   @Column({ nullable: true })
   roomIds: number;
@@ -50,8 +50,8 @@ export class CalendarEvent {
 
   @ManyToOne(
     () => CalendarEventCategory,
-    (_calendarCategory) => _calendarCategory.calendarEventDetail,
+    (_calendarCategory) => _calendarCategory.title,
   )
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: 'categoryName' })
   categoryDetail: CalendarEventCategory;
 }
