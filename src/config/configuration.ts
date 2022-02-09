@@ -15,5 +15,9 @@ export default () => ({
     awsS3BucketName: process.env.AWS_BUCKET_NAME,
     awsSdkLoadConfig: process.env.AWS_SDK_LOAD_CONFIG,
   },
+  jwt: {
+    jwtSecret: process.env.JWT_SECRET,
+    saltRound: process.env.BCRYPT_SALT,
+  },
   botApiKey: process.env.BOT_API_KEY,
 });

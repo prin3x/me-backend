@@ -10,6 +10,7 @@ import {
 import { UpdateStaffContactDto } from './dto/update-staff-contact.dto';
 import { StaffContact } from './entities/staff-contact.entity';
 import * as moment from 'moment';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class StaffContactsService {
@@ -28,19 +29,26 @@ export class StaffContactsService {
     staffInstance.department = createStaffContactDto.department;
     staffInstance.ipPhone = createStaffContactDto.ipPhone;
     staffInstance.name = createStaffContactDto.name;
+    staffInstance.nameTH = createStaffContactDto.nameTH;
     staffInstance.nickname = createStaffContactDto.nickname;
     staffInstance.birthDate = createStaffContactDto.birthDate;
-    staffInstance.hash = createStaffContactDto.email;
+    staffInstance.hash = await bcrypt.hash(createStaffContactDto.hash, 3);
 
     // mock
     staffInstance.createdBy = 1;
 
     try {
-      const key: any = await this.s3Service.uploadImagesS3(
-        createStaffContactDto.image,
-      );
+      if (createStaffContactDto.profilePicUrl) {
+        staffInstance.profilePicUrl = createStaffContactDto.profilePicUrl;
+      } else if (createStaffContactDto.image) {
+        const key: any = await this.s3Service.uploadImagesS3(
+          createStaffContactDto.image,
+        );
 
-      staffInstance.profilePicUrl = key;
+        staffInstance.profilePicUrl = key;
+      } else {
+        staffInstance.profilePicUrl = '';
+      }
 
       res = await this.repo.save(staffInstance);
     } catch (e) {
@@ -111,6 +119,10 @@ export class StaffContactsService {
 
   async findOne(id: number) {
     return await this.repo.findOne(id);
+  }
+
+  async findOneByEmail(email: string) {
+    return await this.repo.findOne({ email });
   }
 
   async update(id: number, updateStaffContactDto: UpdateStaffContactDto) {

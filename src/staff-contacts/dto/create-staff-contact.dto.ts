@@ -7,6 +7,10 @@ export class CreateStaffContactDto {
 
   @IsOptional()
   @IsString()
+  profilePicUrl: string;
+
+  @IsOptional()
+  @IsString()
   name: string;
 
   @IsOptional()
@@ -40,4 +44,12 @@ export class CreateStaffContactDto {
   @IsOptional()
   @IsString()
   birthDate: string;
+
+  @IsOptional()
+  @IsString()
+  hash: string;
+
+  @IsOptional()
+  @IsString()
+  nameTH: string;
 }
