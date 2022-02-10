@@ -170,13 +170,13 @@ export class CalendarEventService {
         start: new Date(_item.Date).toISOString(),
         end: new Date(_item.Date).toISOString(),
         allDay: true,
-        categoryId: 4,
+        categoryName: 'holiday',
       };
     });
 
     try {
       for (let i = 0; i < mapData.length; i++) {
-        // await this.create(mapData[i]);
+        await this.create(mapData[i]);
       }
     } catch (e) {
       console.error(e);

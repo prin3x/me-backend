@@ -38,7 +38,7 @@ export class StaffContact {
   @Column({ default: '' })
   division: string;
 
-  @Column()
+  @Column({ default: '' })
   ipPhone: string;
 
   @Column({ default: '' })
@@ -49,6 +49,9 @@ export class StaffContact {
 
   @Column({ default: '' })
   staffId: string;
+
+  @Column({ default: '' })
+  section: string;
 
   @Column({ default: CONTACT_STATUS.ENABLED })
   status: CONTACT_STATUS;

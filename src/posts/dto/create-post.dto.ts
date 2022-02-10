@@ -15,6 +15,10 @@ export class CreatePostDto {
   @IsString()
   status: POST_STATUS;
 
-  @IsNumber()
-  categoryId: number;
+  @IsOptional()
+  @IsString()
+  tag: string;
+
+  @IsString()
+  categoryName: string;
 }

@@ -1,3 +1,4 @@
+import { PostCategory } from 'post-categories/entities/post-category.entity';
 import {
   Column,
   CreateDateColumn,
@@ -25,7 +26,7 @@ export class Post {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ type: 'longtext' })
   content: string;
 
   @Column({ default: POST_STATUS.ENABLED })
@@ -35,10 +36,13 @@ export class Post {
   adminId: number;
 
   @Column()
-  categoryId: number;
+  categoryName: string;
 
   @Column()
   slug: string;
+
+  @Column()
+  tag: string;
 
   @CreateDateColumn()
   createdDate: Date;
@@ -46,7 +50,7 @@ export class Post {
   @UpdateDateColumn()
   updatedDate: Date;
 
-  //   @ManyToOne(() => PostCategory, (_PostCategory) => _PostCategory.PostDetail)
-  //   @JoinColumn()
-  //   categoryDetail: number;
+  @ManyToOne(() => PostCategory, (_PostCategory) => _PostCategory.title)
+  @JoinColumn()
+  categoryDetail: number;
 }

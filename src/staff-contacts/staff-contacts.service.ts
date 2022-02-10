@@ -32,6 +32,9 @@ export class StaffContactsService {
     staffInstance.nameTH = createStaffContactDto.nameTH;
     staffInstance.nickname = createStaffContactDto.nickname;
     staffInstance.birthDate = createStaffContactDto.birthDate;
+    staffInstance.staffId = createStaffContactDto.staffId;
+    staffInstance.section = createStaffContactDto.section;
+    staffInstance.position = createStaffContactDto.position;
     staffInstance.hash = await bcrypt.hash(createStaffContactDto.hash, 3);
 
     // mock
@@ -58,15 +61,38 @@ export class StaffContactsService {
     return res;
   }
 
+  async bulkCreate(createStaffContactDtoArr: any) {
+    console.log(createStaffContactDtoArr.data, 'createStaffContactDtoArr');
+    let res;
+    try {
+      res = await this.repo
+        .createQueryBuilder()
+        .insert()
+        .into('staff_contact')
+        .values(JSON.parse(createStaffContactDtoArr.data))
+        .execute();
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
+  }
+
   async findAll(opt: ListBasicOperationContact) {
     let res;
 
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
-        .where('StaffContact.name LIKE :name', { name: `%${opt.search}%` })
+        .where(
+          '(StaffContact.name LIKE :name OR StaffContact.nickname LIKE :name2)',
+          { name: `%${opt.search}%`, name2: `%${opt.search}%` },
+        )
         .andWhere('StaffContact.department LIKE :department', {
           department: `%${opt.department}%`,
+        })
+        .andWhere('StaffContact.company LIKE :company', {
+          company: `${opt.company || '%'}`,
         })
         .skip(opt.skip)
         .take(opt.limit)
@@ -174,6 +200,7 @@ export class StaffContactsService {
       order: 'ASC',
       search: q?.search ? q?.search.trim() : '',
       department: q?.department || '',
+      company: q?.company || '',
       startDate: undefined,
       endDate: undefined,
     };

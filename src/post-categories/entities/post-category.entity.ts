@@ -1,9 +1,11 @@
 // import { News } from 'src/news/news.entity';
+import { Post } from 'posts/entities/post.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  OneToMany,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -14,10 +16,7 @@ export enum POST_CATE_STATUS {
 }
 @Entity()
 export class PostCategory {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+  @PrimaryColumn()
   title: string;
 
   @Column({ default: POST_CATE_STATUS.ENABLED })
@@ -29,6 +28,6 @@ export class PostCategory {
   @UpdateDateColumn()
   updatedDate: Date;
 
-  //   @OneToMany(() => News, (_news) => _news.categoryDetail)
-  //   newsDetail: News[];
+  @OneToMany(() => Post, (_post) => _post.categoryDetail)
+  newsDetail: Post[];
 }

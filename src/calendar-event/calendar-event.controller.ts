@@ -24,6 +24,7 @@ export class CalendarEventController {
   }
 
   @Cron('* * * 1 1 *')
+  @Post('/holidays')
   createHoliday() {
     return this.calendarEventService.saveHolidays();
   }

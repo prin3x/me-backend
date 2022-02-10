@@ -8,6 +8,10 @@ export class ListQueryParamsContactDTO extends ListQueryParamsDTO {
 
   @IsString()
   @IsOptional()
+  company: string;
+
+  @IsString()
+  @IsOptional()
   startDate: string;
 
   @IsString()
@@ -17,4 +21,5 @@ export class ListQueryParamsContactDTO extends ListQueryParamsDTO {
 
 export interface ListBasicOperationContact extends ListBasicOperation {
   department?: string;
+  company?: string;
 }

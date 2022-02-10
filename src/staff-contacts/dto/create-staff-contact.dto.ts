@@ -52,4 +52,16 @@ export class CreateStaffContactDto {
   @IsOptional()
   @IsString()
   nameTH: string;
+
+  @IsOptional()
+  @IsString()
+  staffId: string;
+
+  @IsOptional()
+  @IsString()
+  section: string;
+
+  @IsOptional()
+  @IsString()
+  position: string;
 }

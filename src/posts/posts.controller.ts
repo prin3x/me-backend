@@ -8,13 +8,16 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { editFileName, fileFilter } from 'utils/fileUtils';
+import {
+  ListBasicOperationPost,
+  ListQueryParamsPostDTO,
+} from './dto/get-post.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -30,9 +33,11 @@ export class PostsController {
     return this.postsService.create(set);
   }
 
-  @Get()
-  findAll() {
-    return this.postsService.findAll();
+  @Get('/')
+  findAll(@Query() q: ListQueryParamsPostDTO) {
+    const queryString: ListBasicOperationPost =
+      this.postsService.parseQueryString(q);
+    return this.postsService.findAll(queryString);
   }
 
   @Get('/category/:categoryId')

@@ -9,12 +9,17 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { StaffContactsService } from './staff-contacts.service';
 import { CreateStaffContactDto } from './dto/create-staff-contact.dto';
 import { UpdateStaffContactDto } from './dto/update-staff-contact.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ListQueryParamsContactDTO } from './dto/get-staff-contact.dto';
+import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
+import { Roles } from 'auth/roles.decorator';
 
 @Controller('staff-contacts')
 export class StaffContactsController {
@@ -52,6 +57,11 @@ export class StaffContactsController {
   @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.staffContactsService.findOne(+id);
+  }
+
+  @Post('/bulk')
+  bulkCreate(@Body() createStaffContactDtoArr: any) {
+    return this.staffContactsService.bulkCreate(createStaffContactDtoArr);
   }
 
   @Patch('/:id')

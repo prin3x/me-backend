@@ -39,6 +39,6 @@ export interface ListBasicOperation {
   orderBy: string;
   order: 'ASC' | 'DESC';
   search: string;
-  startDate: string;
-  endDate: string;
+  startDate?: string;
+  endDate?: string;
 }
