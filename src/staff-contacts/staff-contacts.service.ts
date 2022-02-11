@@ -115,15 +115,16 @@ export class StaffContactsService {
     let res;
 
     const month = moment(opt.startDate).month() + 1;
+    const department = opt.department || '';
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
         // .where('StaffContact.name LIKE :name', { name: `%${opt.search}%` })
-        // .andWhere('StaffContact.department LIKE :department', {
-        //   department: `%${opt.department}%`,
-        // })
-        .andWhere('MONTH(StaffContact.birthDate) = :month', {
+        .where('MONTH(StaffContact.birthDate) = :month', {
           month,
+        })
+        .andWhere('StaffContact.department LIKE :department', {
+          department: `%${department}%`,
         })
         .skip(opt.skip)
         .take(opt.limit)
