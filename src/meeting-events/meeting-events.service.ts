@@ -5,8 +5,17 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
-import { Repository } from 'typeorm';
+import * as moment from 'moment';
+import { RoomsService } from 'rooms/rooms.service';
+import {
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { CreateMeetingEventDto } from './dto/create-meeting-event.dto';
+import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 import { UpdateMeetingEventDto } from './dto/update-meeting-event.dto';
 import { MeetingEvent } from './entities/meeting-event.entity';
 
@@ -15,6 +24,7 @@ export class MeetingEventsService {
   constructor(
     @InjectRepository(MeetingEvent)
     private repo: Repository<MeetingEvent>,
+    private roomsService: RoomsService,
   ) {}
 
   async create(
@@ -24,12 +34,42 @@ export class MeetingEventsService {
     const newEvent = new MeetingEvent();
     newEvent.title = createMeetingEventDto.title;
     newEvent.description = createMeetingEventDto.description;
-    newEvent.start = new Date(createMeetingEventDto.start);
-    newEvent.end = new Date(createMeetingEventDto.end);
+
+    newEvent.start = createMeetingEventDto.allDay
+      ? new Date(
+          moment(createMeetingEventDto.start).startOf('day').toISOString(),
+        )
+      : new Date(createMeetingEventDto.start);
+    newEvent.end = createMeetingEventDto.allDay
+      ? new Date(
+          moment(createMeetingEventDto.start)
+            .endOf('day')
+            .subtract(1, 'm')
+            .toISOString(),
+        )
+      : new Date(createMeetingEventDto.end);
+
     newEvent.roomId = createMeetingEventDto.roomId;
+    newEvent.type = createMeetingEventDto.type;
+    newEvent.allDay = false;
     newEvent.createdBy = user.id;
 
     try {
+      const start = moment(createMeetingEventDto.start).format(
+        'yyyy-MM-DD HH:mm:ss',
+      );
+      const end = moment(createMeetingEventDto.end).format(
+        'yyyy-MM-DD HH:mm:ss',
+      );
+      const allRoomThisDay = await this.findInterval(
+        start,
+        end,
+        createMeetingEventDto.roomId,
+      );
+
+      if (allRoomThisDay.length > 0)
+        throw new BadRequestException('Duplicated Booking');
+
       await this.repo.save(newEvent);
     } catch (e) {
       throw new BadRequestException(e);
@@ -38,8 +78,57 @@ export class MeetingEventsService {
     return newEvent;
   }
 
-  async findAll() {
-    return await this.repo.find();
+  async findInterval(
+    start: string,
+    end: string,
+    roomId: number,
+  ): Promise<MeetingEvent[]> {
+    const query = this.repo.createQueryBuilder('meeting');
+    query.where('meeting.roomId = :roomId', {
+      roomId,
+    });
+    query
+      .where('meeting.start <= :start AND meeting.end >= :end', {
+        start: start,
+        end: end,
+      })
+      .orWhere('meeting.start >= :start AND meeting.end <= :end', {
+        start: start,
+        end: end,
+      })
+      .orWhere('meeting.start <= :start AND meeting.end >= :start', {
+        start: start,
+      })
+      .orWhere('meeting.start >= :end AND meeting.end <= :end', {
+        end: end,
+      });
+
+    return await query.getMany();
+  }
+
+  async findAll(opt: ListQueryMeetingDTO) {
+    return await this.repo.find({
+      where: {
+        start: MoreThan(opt.startDate),
+        end: LessThan(opt.endDate),
+      },
+      relations: ['staffContactDetail'],
+    });
+  }
+
+  async findAvailableTimeIntervalByRoomId(targetDate: string, roomId: number) {
+    let res;
+    try {
+      res = await this.repo.find({
+        roomId: roomId,
+        start: MoreThanOrEqual(moment(targetDate).startOf('day').toISOString()),
+        end: LessThanOrEqual(moment(targetDate).endOf('day').toISOString()),
+      });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+
+    return res;
   }
 
   async findOne(id: number) {

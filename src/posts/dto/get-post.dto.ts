@@ -5,8 +5,13 @@ export class ListQueryParamsPostDTO extends ListQueryParamsDTO {
   @IsString()
   @IsOptional()
   categoryName: string;
+
+  @IsString()
+  @IsOptional()
+  tag: string;
 }
 
 export interface ListBasicOperationPost extends ListBasicOperation {
   categoryName?: string;
+  tag?: string;
 }

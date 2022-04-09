@@ -1,4 +1,11 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { MeetingEventType } from 'meeting-events/entities/meeting-event.entity';
 
 export class CreateMeetingEventDto {
   @IsString()
@@ -16,4 +23,10 @@ export class CreateMeetingEventDto {
 
   @IsNumber()
   roomId: number;
+
+  @IsBoolean()
+  allDay: boolean;
+
+  @IsEnum(MeetingEventType)
+  type: MeetingEventType;
 }

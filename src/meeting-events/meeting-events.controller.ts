@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { MeetingEventsService } from './meeting-events.service';
 import { CreateMeetingEventDto } from './dto/create-meeting-event.dto';
@@ -16,6 +17,7 @@ import { Roles } from 'auth/roles.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
+import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 
 @Controller('meeting-events')
 export class MeetingEventsController {
@@ -32,8 +34,17 @@ export class MeetingEventsController {
   }
 
   @Get()
-  findAll() {
-    return this.meetingEventsService.findAll();
+  findAll(@Query() q: ListQueryMeetingDTO) {
+    return this.meetingEventsService.findAll(q);
+  }
+
+  @Get('/duplicate')
+  findDuplicated(@Body() createMeetingEventDto: any) {
+    return this.meetingEventsService.findInterval(
+      createMeetingEventDto.start,
+      createMeetingEventDto.end,
+      createMeetingEventDto.roomId,
+    );
   }
 
   @Roles(['user'])

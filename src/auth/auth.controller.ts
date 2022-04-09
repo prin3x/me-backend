@@ -14,9 +14,14 @@ import { JwtAuthGuard } from './jwt-auth-guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('/admin/register')
+  registerAdmin(@Body() admin) {
+    return this.authService.registerAdmin(admin);
+  }
+
   @Post('/admin/login')
-  adminLogin(@Body() user) {
-    return this.authService.loginAdmin(user);
+  adminLogin(@Body() admin) {
+    return this.authService.loginAdmin(admin);
   }
 
   @Post('/user/login')
@@ -29,5 +34,11 @@ export class AuthController {
   checkAuthUser(@AuthPayload() user) {
     if (!user) throw new UnauthorizedException();
     return user;
+  }
+
+  @Post('/change-password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(@Body() user) {
+    return this.authService.changePassword(user);
   }
 }

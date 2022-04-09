@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { extname } from 'path';
+import * as fs from 'fs';
 
 export const fileFilter = (_req, file, callback) => {
   if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
@@ -24,3 +25,8 @@ export const editFileName = (_req, file, callback) => {
 
   callback(null, `${dateTime}_${nanoid(5)}${fileExtName}`);
 };
+
+export function base64Encode(file) {
+  const bitmap: any = fs.readFileSync(file);
+  return bitmap ? Buffer.from(bitmap).toString('base64') : '';
+}

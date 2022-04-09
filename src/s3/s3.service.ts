@@ -12,7 +12,6 @@ export class S3Service {
 
   // TODO: Constructor
   constructor(private config: ConfigService) {
-    console.log(this.config.get('s3.awsS3BucketName'));
     this.s3 = new AWS.S3({
       accessKeyId: this.config.get('s3.awsAccessKeyID'),
       secretAccessKey: this.config.get('s3.awsSecretAccessKeyID'),

@@ -2,6 +2,7 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { POST_STATUS } from 'posts/entities/post.entity';
 
 export class CreatePostDto {
+  @IsOptional()
   image: any;
 
   @IsOptional()

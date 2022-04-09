@@ -25,6 +25,8 @@ import { S3Service } from 's3/s3.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'config/configuration';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Carousel } from 'carousel/entities/carousel.entity';
+import { CarouselModule } from './carousel/carousel.module';
 
 @Module({
   imports: [
@@ -52,6 +54,7 @@ import { ScheduleModule } from '@nestjs/schedule';
           StaffContact,
           User,
           MeetingEvent,
+          Carousel,
         ],
       }),
     }),
@@ -67,6 +70,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     UsersModule,
     MeetingEventsModule,
     S3Service,
+    CarouselModule,
   ],
   controllers: [AppController],
   providers: [AppService],

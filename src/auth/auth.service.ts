@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AdminsService } from 'admins/admins.service';
 import { StaffContactsService } from 'staff-contacts/staff-contacts.service';
@@ -33,18 +37,61 @@ export class AuthService {
   }
 
   async loginAdmin(user: any) {
-    const _user = await this.adminService.findOne(user.username);
-    const payload = { username: _user.username, id: _user.id };
+    let payload;
+    try {
+      const _admin = await this.adminService.findOne(user.username);
+      const isValid = await this.staffService.comparePassword(
+        user.password,
+        _admin.password,
+      );
+
+      if (isValid) {
+        payload = { username: _admin.username, id: _admin.id };
+      }
+    } catch (e) {
+      throw new UnauthorizedException('Unable to login user');
+    }
     return {
       accessToken: this.jwtService.sign(payload),
     };
   }
 
+  async registerAdmin(user: any) {
+    let payload;
+    try {
+      const _admin = await this.adminService.findOne(user.username);
+
+      if (_admin) throw new NotAcceptableException('Duplicated Id');
+
+      payload = await this.adminService.regisAdmin(user);
+    } catch (e) {
+      throw new UnauthorizedException('Unable to login user');
+    }
+    return { accessToken: payload };
+  }
+
   async loginUser(user: any) {
-    const _user = await this.staffService.findOneByEmail(user.email);
-    const payload = { username: _user.email, id: _user.id };
+    let payload;
+    try {
+      const _user = await this.staffService.findOneByEmail(user.email);
+      const isValid = await this.staffService.comparePassword(
+        user.password,
+        _user.hash,
+      );
+
+      if (isValid) {
+        payload = { username: _user.email, id: _user.id };
+      }
+    } catch (e) {
+      throw new UnauthorizedException('Unable to login user');
+    }
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async changePassword(user: any) {
+    const _user = await this.staffService.findOneByEmail(user.email);
+    return await this.staffService.changePassword(_user.id, user.newPassword);
   }
 }

@@ -18,6 +18,7 @@ import {
   ListBasicOperationPost,
   ListQueryParamsPostDTO,
 } from './dto/get-post.dto';
+import { UpdateStatus } from './dto/update-status.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -31,6 +32,13 @@ export class PostsController {
       image,
     };
     return this.postsService.create(set);
+  }
+
+  @Get('/all')
+  findAllNoExclude(@Query() q: ListQueryParamsPostDTO) {
+    const queryString: ListBasicOperationPost =
+      this.postsService.parseQueryString(q);
+    return this.postsService.findAllNoExclude(queryString);
   }
 
   @Get('/')
@@ -47,12 +55,25 @@ export class PostsController {
 
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
-    return this.postsService.findOne(slug);
+    return this.postsService.findOneBySlug(slug);
   }
 
   @Patch(':slug')
-  update(@Param('slug') slug: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(slug, updatePostDto);
+  update(
+    @Param('slug') slug: string,
+    @UploadedFile() image: Express.Multer.File,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    const set: UpdatePostDto = {
+      ...updatePostDto,
+      image,
+    };
+    return this.postsService.update(slug, set);
+  }
+
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: number, @Body() updateStatus: UpdateStatus) {
+    return this.postsService.updateStatus(id, updateStatus);
   }
 
   @Delete(':id')

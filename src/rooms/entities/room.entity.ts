@@ -8,6 +8,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum ROOM_STATUS {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+  NONE = 'none',
+}
+
 @Entity()
 export class Room {
   @PrimaryGeneratedColumn()
@@ -18,6 +24,9 @@ export class Room {
 
   @Column()
   name: string;
+
+  @Column({ default: 10 })
+  capacity: number;
 
   @Column({ default: '', nullable: true })
   description: string;
@@ -33,6 +42,9 @@ export class Room {
 
   @Column({ default: 0 })
   createdBy: number;
+
+  @Column({ default: ROOM_STATUS.ENABLED })
+  status: ROOM_STATUS;
 
   @OneToMany(() => MeetingEvent, (_room) => _room.roomId)
   meetingEventDetail: MeetingEvent[];

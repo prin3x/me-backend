@@ -1,7 +1,10 @@
+import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -70,4 +73,10 @@ export class StaffContact {
 
   @UpdateDateColumn()
   updatedDate: Date;
+
+  @OneToMany(
+    () => MeetingEvent,
+    (_meetingEvent) => _meetingEvent.staffContactDetail,
+  )
+  meetingEvent: MeetingEvent[];
 }

@@ -42,28 +42,38 @@ export class StaffContactsController {
    * It returns all the staff contacts.
    * @param {ListQueryCalendarDTO} q - ListQueryCalendarDTO
    */
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/')
   findAll(@Query() q: ListQueryParamsContactDTO) {
     const queryString = this.staffContactsService.parseQueryString(q);
     return this.staffContactsService.findAll(queryString);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/birthday')
   findAllBirthDay(@Query() q: ListQueryParamsContactDTO) {
     const queryString = this.staffContactsService.parseQueryString(q);
     return this.staffContactsService.findAllBirthday(queryString);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
   findOne(@Param('id') id: string) {
-    return this.staffContactsService.findOne(+id);
+    return this.staffContactsService.findOne(id);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/bulk')
   bulkCreate(@Body() createStaffContactDtoArr: any) {
     return this.staffContactsService.bulkCreate(createStaffContactDtoArr);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id')
   update(
     @Param('id') id: string,
@@ -72,6 +82,8 @@ export class StaffContactsController {
     return this.staffContactsService.update(+id, updateStaffContactDto);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/:id')
   remove(@Param('id') id: string) {
     return this.staffContactsService.remove(+id);

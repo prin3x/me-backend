@@ -1,22 +1,27 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { nanoid } from 'nanoid';
-import { S3Service } from 's3/s3.service';
+import * as path from 'path';
 import { Repository } from 'typeorm';
+import { base64Encode } from 'utils/fileUtils';
 import { CreatePostDto } from './dto/create-post.dto';
 import {
   ListBasicOperationPost,
   ListQueryParamsPostDTO,
 } from './dto/get-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Post } from './entities/post.entity';
+import { UpdateStatus } from './dto/update-status.dto';
+import { Post, POST_STATUS } from './entities/post.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post)
     private repo: Repository<Post>,
-    private s3Service: S3Service,
   ) {}
   async create(createPostDto: CreatePostDto) {
     let res;
@@ -29,11 +34,9 @@ export class PostsService {
     // mock
     newsInsance.adminId = 1;
     newsInsance.slug = `${nanoid(12)}`;
+    newsInsance.imageUrl = `${createPostDto.image.filename}`;
 
     try {
-      const key: any = await this.s3Service.uploadImagesS3(createPostDto.image);
-
-      newsInsance.imageUrl = key;
       res = await this.repo.save(newsInsance);
     } catch (e) {
       throw Error(e);
@@ -43,19 +46,28 @@ export class PostsService {
   }
 
   async findAll(opt: ListBasicOperationPost) {
-    let res;
+    let res, query;
     try {
-      res = await this.repo
-        .createQueryBuilder('posts')
-        .where('(posts.categoryName LIKE :categoryName)', {
+      query = this.repo.createQueryBuilder('posts');
+      query
+        .where('(posts.status LIKE :status)', {
+          status: `${POST_STATUS.ENABLED}`,
+        })
+        .andWhere('(posts.categoryName LIKE :categoryName)', {
           categoryName: `%${opt.categoryName}%`,
         })
         .andWhere('(posts.title LIKE :search)', {
           search: `%${opt.search}%`,
-        })
-        .skip(opt.skip)
-        .take(opt.limit)
-        .getManyAndCount();
+        });
+
+      if (opt.tag) {
+        query.andWhere('(posts.tag LIKE :tag)', {
+          tag: `${opt.tag}`,
+        });
+      }
+      query.orderBy(opt.orderBy, 'DESC').skip(opt.skip).take(opt.limit);
+
+      res = await query.getManyAndCount();
     } catch (e) {
       throw new BadRequestException(e);
     }
@@ -67,6 +79,54 @@ export class PostsService {
       page: opt.page,
     };
 
+    rtn.items = rtn.items.map((_item: Post) => {
+      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
+      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
+
+      return _item;
+    });
+
+    return rtn;
+  }
+
+  async findAllNoExclude(opt: ListBasicOperationPost) {
+    let res, query;
+    try {
+      query = this.repo.createQueryBuilder('posts');
+      query
+        .where('(posts.categoryName LIKE :categoryName)', {
+          categoryName: `%${opt.categoryName}%`,
+        })
+        .andWhere('(posts.title LIKE :search)', {
+          search: `%${opt.search}%`,
+        });
+
+      if (opt.tag) {
+        query.andWhere('(posts.tag LIKE :tag)', {
+          tag: `${opt.tag}`,
+        });
+      }
+      query.skip(opt.skip).take(opt.limit);
+
+      res = await query.getManyAndCount();
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+
+    const rtn = {
+      items: res?.[0],
+      itemCount: res?.[0]?.length,
+      total: res?.[1],
+      page: opt.page,
+    };
+
+    rtn.items = rtn.items.map((_item: Post) => {
+      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
+      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
+
+      return _item;
+    });
+
     return rtn;
   }
 
@@ -74,19 +134,38 @@ export class PostsService {
     return await this.repo.find({ where: { categoryId: _id } });
   }
 
-  async findOne(slug: string) {
-    return await this.repo.findOne({ slug });
+  async findOneBySlug(slug: string) {
+    let res: Post;
+    try {
+      res = await this.repo.findOne({ slug });
+    } catch (error) {
+      throw new NotFoundException('Slug Not Found');
+    }
+
+    const imageBase64 = base64Encode(path.join('./upload', res.imageUrl));
+    res.imageUrl = `data:image/png;base64, ${imageBase64}`;
+
+    return res;
+  }
+
+  async findOne(id: number) {
+    return await this.repo.findOne(id);
   }
 
   async update(slug: string, updatePostDto: UpdatePostDto) {
     let res;
 
-    const newsInsance = await this.findOne(slug);
+    const newsInsance = await this.repo.findOne({ slug });
     newsInsance.title = updatePostDto.title;
     newsInsance.content = updatePostDto.content;
     newsInsance.categoryName = updatePostDto.categoryName;
+    newsInsance.tag = updatePostDto.tag;
     // mock
     newsInsance.adminId = 1;
+    newsInsance.slug = `${nanoid(12)}`;
+    if (updatePostDto.image) {
+      newsInsance.imageUrl = `${updatePostDto.image.filename}`;
+    }
 
     try {
       res = await this.repo.save(newsInsance);
@@ -97,8 +176,55 @@ export class PostsService {
     return res;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async updateStatus(id: number, updateStatus: UpdateStatus) {
+    let res;
+
+    try {
+      if (updateStatus.status === POST_STATUS.ENABLED) {
+        res = this._enablePost(id);
+      }
+      if (updateStatus.status === POST_STATUS.DISABLED) {
+        res = this._disablePost(id);
+      }
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
+  }
+
+  async _enablePost(id: number) {
+    let res;
+
+    const post = await this.findOne(id);
+    post.status = POST_STATUS.ENABLED;
+
+    try {
+      res = await this.repo.save(post);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
+  }
+
+  async _disablePost(id: number) {
+    let res;
+
+    const post = await this.findOne(id);
+    post.status = POST_STATUS.DISABLED;
+
+    try {
+      res = await this.repo.save(post);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
+  }
+
+  async remove(id: number) {
+    return await this.repo.delete(id);
   }
 
   parseQueryString(q: ListQueryParamsPostDTO): ListBasicOperationPost {
@@ -106,10 +232,11 @@ export class PostsService {
       page: +q?.page || 1,
       limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 10,
       skip: (q?.page - 1) * q?.limit,
-      orderBy: q?.orderBy || 'id',
+      orderBy: q?.orderBy || 'createdDate',
       order: 'ASC',
       search: q?.search ? q?.search.trim() : '',
       categoryName: q?.categoryName ? q?.categoryName.trim() : '',
+      tag: q?.tag ? q?.tag.trim() : '',
     };
 
     q.order = q?.order ? q?.order.toUpperCase() : '';

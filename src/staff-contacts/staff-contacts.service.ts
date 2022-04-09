@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { S3Service } from 's3/s3.service';
 import { Repository } from 'typeorm';
@@ -11,6 +15,7 @@ import { UpdateStaffContactDto } from './dto/update-staff-contact.dto';
 import { StaffContact } from './entities/staff-contact.entity';
 import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class StaffContactsService {
@@ -18,6 +23,7 @@ export class StaffContactsService {
     @InjectRepository(StaffContact)
     private repo: Repository<StaffContact>,
     private s3Service: S3Service,
+    private config: ConfigService,
   ) {}
 
   async create(createStaffContactDto: CreateStaffContactDto) {
@@ -62,7 +68,6 @@ export class StaffContactsService {
   }
 
   async bulkCreate(createStaffContactDtoArr: any) {
-    console.log(createStaffContactDtoArr.data, 'createStaffContactDtoArr');
     let res;
     try {
       res = await this.repo
@@ -85,7 +90,7 @@ export class StaffContactsService {
       res = await this.repo
         .createQueryBuilder('StaffContact')
         .where(
-          '(StaffContact.name LIKE :name OR StaffContact.nickname LIKE :name2)',
+          '(StaffContact.name LIKE :name OR StaffContact.nameTH LIKE :name OR StaffContact.nickname LIKE :name2)',
           { name: `%${opt.search}%`, name2: `%${opt.search}%` },
         )
         .andWhere('StaffContact.department LIKE :department', {
@@ -144,12 +149,28 @@ export class StaffContactsService {
     return rtn;
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return await this.repo.findOne(id);
   }
 
   async findOneByEmail(email: string) {
     return await this.repo.findOne({ email });
+  }
+
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    let res,
+      rtn = false;
+
+    try {
+      res = await bcrypt.compare(password, hash);
+      if (res) {
+        rtn = true;
+      }
+    } catch (e) {
+      throw new UnauthorizedException('Unable to authorized');
+    }
+
+    return rtn;
   }
 
   async update(id: number, updateStaffContactDto: UpdateStaffContactDto) {
@@ -163,6 +184,22 @@ export class StaffContactsService {
     staffContactInstance.ipPhone = updateStaffContactDto.ipPhone;
     staffContactInstance.name = updateStaffContactDto.name;
     staffContactInstance.nickname = updateStaffContactDto.nickname;
+
+    try {
+      res = await this.repo.save(staffContactInstance);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
+  }
+
+  async changePassword(id: number, hash: string) {
+    let res;
+
+    const staffContactInstance = new StaffContact();
+    staffContactInstance.id = id;
+    staffContactInstance.hash = await bcrypt.hash(hash, 3);
 
     try {
       res = await this.repo.save(staffContactInstance);

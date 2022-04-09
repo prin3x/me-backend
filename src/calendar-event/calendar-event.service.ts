@@ -49,7 +49,6 @@ export class CalendarEventService {
 
   async findAll(opt: ListQueryCalendarDTO) {
     let rfe, rtn, rtc;
-
     try {
       rfe = await this.repo.find({
         start: MoreThan(opt.startDate),
@@ -64,7 +63,8 @@ export class CalendarEventService {
         bd = bd.join('-');
         return {
           id: nanoid(),
-          title: `Birthday 's ${_item.nickname}`,
+          title: `วันเกิด ${_item.nickname} - ${_item.section}`,
+          staffId: _item.id,
           description: '',
           start: bd,
           end: bd,
@@ -93,7 +93,7 @@ export class CalendarEventService {
     calendarEventInstance.description = _calendarEvent.description;
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
-    calendarEventInstance.allDay = !!_calendarEvent.allDay;
+    calendarEventInstance.allDay = _calendarEvent.allDay;
     calendarEventInstance.categoryName = _calendarEvent.categoryName;
 
     try {
@@ -114,7 +114,7 @@ export class CalendarEventService {
     calendarEventInstance.description = _calendarEvent.description;
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
-    calendarEventInstance.allDay = !!_calendarEvent.allDay;
+    calendarEventInstance.allDay = false;
     calendarEventInstance.categoryName = _calendarEvent.categoryName;
 
     try {

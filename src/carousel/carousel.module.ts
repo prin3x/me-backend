@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { PostsService } from './posts.service';
-import { PostsController } from './posts.controller';
+import { CarouselService } from './carousel.service';
+import { CarouselController } from './carousel.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Post } from './entities/post.entity';
+import { Carousel } from './entities/carousel.entity';
 import { S3Module } from 's3/s3.module';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post]),
+    TypeOrmModule.forFeature([Carousel]),
     S3Module,
     MulterModule.registerAsync({
       useFactory: () => ({
@@ -16,7 +16,7 @@ import { MulterModule } from '@nestjs/platform-express';
       }),
     }),
   ],
-  controllers: [PostsController],
-  providers: [PostsService],
+  controllers: [CarouselController],
+  providers: [CarouselService],
 })
-export class PostsModule {}
+export class CarouselModule {}
