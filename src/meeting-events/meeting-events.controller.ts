@@ -33,11 +33,15 @@ export class MeetingEventsController {
     return this.meetingEventsService.create(createMeetingEventDto, user);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll(@Query() q: ListQueryMeetingDTO) {
     return this.meetingEventsService.findAll(q);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/duplicate')
   findDuplicated(@Body() createMeetingEventDto: any) {
     return this.meetingEventsService.findInterval(

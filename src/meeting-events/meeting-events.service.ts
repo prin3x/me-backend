@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +22,7 @@ import { MeetingEvent } from './entities/meeting-event.entity';
 
 @Injectable()
 export class MeetingEventsService {
+  private readonly logger = new Logger(MeetingEventsService.name);
   constructor(
     @InjectRepository(MeetingEvent)
     private repo: Repository<MeetingEvent>,
@@ -29,8 +31,11 @@ export class MeetingEventsService {
 
   async create(
     createMeetingEventDto: CreateMeetingEventDto,
-    user: IAuthPayload,
+    auth: IAuthPayload,
   ) {
+    this.logger.log(
+      `Fn: ${this.create.name}, Params: ${createMeetingEventDto.title}, Auth: ${auth.id}`,
+    );
     const newEvent = new MeetingEvent();
     newEvent.title = createMeetingEventDto.title;
     newEvent.description = createMeetingEventDto.description;
@@ -52,7 +57,7 @@ export class MeetingEventsService {
     newEvent.roomId = createMeetingEventDto.roomId;
     newEvent.type = createMeetingEventDto.type;
     newEvent.allDay = false;
-    newEvent.createdBy = user.id;
+    newEvent.createdBy = auth.id;
 
     try {
       const start = moment(createMeetingEventDto.start).format(
@@ -72,6 +77,9 @@ export class MeetingEventsService {
 
       await this.repo.save(newEvent);
     } catch (e) {
+      this.logger.error(
+        `Fn: ${this.create.name}, Params: ${createMeetingEventDto.title}, Auth: ${auth.id}`,
+      );
       throw new BadRequestException(e);
     }
 
@@ -136,6 +144,7 @@ export class MeetingEventsService {
   }
 
   async findOneAndOwner(id: number, user: IAuthPayload) {
+    this.logger.log(`Fn: ${this.findOneAndOwner.name}`);
     let res, rtn;
     try {
       res = await this.repo.findOne(id);
@@ -144,6 +153,7 @@ export class MeetingEventsService {
         isOwner: res.createdBy === user.id,
       };
     } catch (e) {
+      this.logger.error(`Fn: ${this.findOneAndOwner.name}`);
       throw new BadRequestException('Not Found');
     }
 
@@ -155,6 +165,7 @@ export class MeetingEventsService {
     updateMeetingEventDto: UpdateMeetingEventDto,
     user: IAuthPayload,
   ) {
+    this.logger.log(`Fn: ${this.update.name}, Auth: ${user.id}`);
     let newEvent;
     try {
       newEvent = await this.findOne(id);
@@ -169,6 +180,7 @@ export class MeetingEventsService {
 
       await this.repo.save(newEvent);
     } catch (e) {
+      this.logger.error(`Fn: ${this.update.name}, Auth: ${user.id}`);
       throw new BadRequestException();
     }
 

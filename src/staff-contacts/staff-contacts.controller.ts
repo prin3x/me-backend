@@ -20,22 +20,26 @@ import { ListQueryParamsContactDTO } from './dto/get-staff-contact.dto';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
+import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
 @Controller('staff-contacts')
 export class StaffContactsController {
   constructor(private readonly staffContactsService: StaffContactsService) {}
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   create(
     @UploadedFile() image: Express.Multer.File,
     @Body() createStaffContactDto: CreateStaffContactDto,
+    @AuthPayload() admin: IAuthPayload,
   ) {
     const set: CreateStaffContactDto = {
       ...createStaffContactDto,
       image,
     };
-    return this.staffContactsService.create(set);
+    return this.staffContactsService.create(set, admin);
   }
 
   /**

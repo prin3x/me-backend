@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,9 +17,11 @@ import { StaffContact } from './entities/staff-contact.entity';
 import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { IAuthPayload } from 'auth/auth.decorator';
 
 @Injectable()
 export class StaffContactsService {
+  private readonly logger = new Logger(StaffContactsService.name);
   constructor(
     @InjectRepository(StaffContact)
     private repo: Repository<StaffContact>,
@@ -26,7 +29,13 @@ export class StaffContactsService {
     private config: ConfigService,
   ) {}
 
-  async create(createStaffContactDto: CreateStaffContactDto) {
+  async create(
+    createStaffContactDto: CreateStaffContactDto,
+    auth: IAuthPayload,
+  ) {
+    this.logger.log(
+      `Fn: ${this.create.name}, Params: ${createStaffContactDto.name}, Auth: ${auth.id}`,
+    );
     let res;
 
     const staffInstance = new StaffContact();
@@ -44,7 +53,7 @@ export class StaffContactsService {
     staffInstance.hash = await bcrypt.hash(createStaffContactDto.hash, 3);
 
     // mock
-    staffInstance.createdBy = 1;
+    staffInstance.createdBy = auth.id;
 
     try {
       if (createStaffContactDto.profilePicUrl) {
@@ -61,6 +70,9 @@ export class StaffContactsService {
 
       res = await this.repo.save(staffInstance);
     } catch (e) {
+      this.logger
+        .error(`Fn: ${this.create.name}, Params: ${createStaffContactDto.name}, Auth: ${auth.id}
+  `);
       throw Error(e);
     }
 
@@ -68,6 +80,7 @@ export class StaffContactsService {
   }
 
   async bulkCreate(createStaffContactDtoArr: any) {
+    this.logger.log(`Fn: ${this.bulkCreate.name}`);
     let res;
     try {
       res = await this.repo
@@ -77,6 +90,8 @@ export class StaffContactsService {
         .values(JSON.parse(createStaffContactDtoArr.data))
         .execute();
     } catch (e) {
+      this.logger.error(`Fn: ${this.bulkCreate.name}
+      `);
       throw Error(e);
     }
 
@@ -84,6 +99,7 @@ export class StaffContactsService {
   }
 
   async findAll(opt: ListBasicOperationContact) {
+    this.logger.log(`Fn: ${this.findAll.name}`);
     let res;
 
     try {
@@ -103,6 +119,7 @@ export class StaffContactsService {
         .take(opt.limit)
         .getManyAndCount();
     } catch (e) {
+      this.logger.error(`Fn: ${this.findAll.name}`);
       throw new BadRequestException(e);
     }
 
@@ -117,6 +134,7 @@ export class StaffContactsService {
   }
 
   async findAllBirthday(opt: ListBasicOperationContact) {
+    this.logger.log(`Fn: ${this.findAllBirthday.name}`);
     let res;
 
     const month = moment(opt.startDate).month() + 1;
@@ -136,6 +154,7 @@ export class StaffContactsService {
         .orderBy('StaffContact.birthDate', 'ASC')
         .getManyAndCount();
     } catch (e) {
+      this.logger.error(`Fn: ${this.findAllBirthday.name}`);
       throw new BadRequestException(e);
     }
 
@@ -158,6 +177,7 @@ export class StaffContactsService {
   }
 
   async comparePassword(password: string, hash: string): Promise<boolean> {
+    this.logger.log(`Fn: ${this.comparePassword.name}`);
     let res,
       rtn = false;
 
@@ -167,6 +187,7 @@ export class StaffContactsService {
         rtn = true;
       }
     } catch (e) {
+      this.logger.error(`Fn: ${this.comparePassword.name}`);
       throw new UnauthorizedException('Unable to authorized');
     }
 
@@ -174,6 +195,7 @@ export class StaffContactsService {
   }
 
   async update(id: number, updateStaffContactDto: UpdateStaffContactDto) {
+    this.logger.log(`Fn: ${this.update.name}`);
     let res;
 
     const staffContactInstance = new StaffContact();
@@ -188,6 +210,7 @@ export class StaffContactsService {
     try {
       res = await this.repo.save(staffContactInstance);
     } catch (e) {
+      this.logger.error(`Fn: ${this.update.name}`);
       throw Error(e);
     }
 
@@ -195,6 +218,7 @@ export class StaffContactsService {
   }
 
   async changePassword(id: number, hash: string) {
+    this.logger.log(`Fn: ${this.changePassword.name}`);
     let res;
 
     const staffContactInstance = new StaffContact();
@@ -204,6 +228,7 @@ export class StaffContactsService {
     try {
       res = await this.repo.save(staffContactInstance);
     } catch (e) {
+      this.logger.error(`Fn: ${this.changePassword.name}`);
       throw Error(e);
     }
 
@@ -211,6 +236,7 @@ export class StaffContactsService {
   }
 
   async remove(id: number) {
+    this.logger.log(`Fn: ${this.remove.name}`);
     let res;
 
     const staffContactInstance = new StaffContact();
@@ -219,6 +245,7 @@ export class StaffContactsService {
     try {
       res = await this.repo.delete({ id });
     } catch (e) {
+      this.logger.error(`Fn: ${this.remove.name}`);
       throw Error(e);
     }
 

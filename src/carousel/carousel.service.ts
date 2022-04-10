@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCarouselDto } from './dto/create-carousel.dto';
@@ -7,6 +11,12 @@ import { Carousel, CAROUSEL_STATUS } from './entities/carousel.entity';
 import * as path from 'path';
 import { base64Encode } from 'utils/fileUtils';
 import { UpdateCarouselStatusDto } from './dto/update-status-carousel.dto';
+import { ListBasicOperation } from 'utils/query.dto';
+import { RTN_MODEL } from 'utils/rtn.model';
+import {
+  ListBasicOperationCarousel,
+  ListQueryParamsCarouselDTO,
+} from './dto/get-carousel.dto';
 
 @Injectable()
 export class CarouselService {
@@ -55,23 +65,35 @@ export class CarouselService {
     return carouselList;
   }
 
-  async findAllNoExclude(): Promise<Carousel[]> {
-    let carouselList: Carousel[];
+  async findAllNoExclude(opt: ListBasicOperationCarousel): Promise<RTN_MODEL> {
+    let res, query;
     try {
-      const rawCarouselList = await this.repo.find();
-      carouselList = rawCarouselList.map((_carouselInfo: Carousel) => {
-        const imageBase64 = base64Encode(
-          path.join('./upload', _carouselInfo.imageUrl),
-        );
-        _carouselInfo.imageUrl = `data:image/png;base64, ${imageBase64}`;
-
-        return _carouselInfo;
+      query = this.repo.createQueryBuilder('carousel');
+      query.where('(carousel.title LIKE :search)', {
+        search: `%${opt.search}%`,
       });
+      query.skip(opt.skip).take(opt.limit);
+
+      res = await query.getManyAndCount();
     } catch (e) {
-      console.error(e);
+      throw new BadRequestException(e);
     }
 
-    return carouselList;
+    const rtn: RTN_MODEL = {
+      items: res?.[0],
+      itemCount: res?.[0]?.length,
+      total: res?.[1],
+      page: opt.page,
+    };
+
+    rtn.items = rtn.items.map((_item: Carousel) => {
+      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
+      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
+
+      return _item;
+    });
+
+    return rtn;
   }
 
   async findOne(id: number) {
@@ -161,5 +183,23 @@ export class CarouselService {
 
   async remove(id: number) {
     return await this.repo.delete(id);
+  }
+
+  parseQueryString(q: ListQueryParamsCarouselDTO): ListBasicOperationCarousel {
+    const rtn: ListBasicOperationCarousel = {
+      page: +q?.page || 1,
+      limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 10,
+      skip: (q?.page - 1) * q?.limit,
+      orderBy: q?.orderBy || 'createdDate',
+      order: 'ASC',
+      search: q?.search ? q?.search.trim() : '',
+      linkOut: q?.linkOut ? q?.linkOut.trim() : '',
+    };
+
+    q.order = q?.order ? q?.order.toUpperCase() : '';
+    rtn.order = q?.order != 'ASC' && q?.order != 'DESC' ? 'DESC' : q?.order;
+    rtn.skip = (rtn.page - 1) * rtn.limit;
+
+    return rtn;
   }
 }

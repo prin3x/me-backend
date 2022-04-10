@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -18,24 +19,33 @@ import {
   ListBasicOperationRoom,
   ListQueryParamsRoomDTO,
 } from './dto/get-room.dto';
+import { Roles } from 'auth/roles.decorator';
+import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
+import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   create(
     @UploadedFile() image: Express.Multer.File,
     @Body() createRoomDto: any,
+    @AuthPayload() admin: IAuthPayload,
   ) {
     const set: CreateRoomDto = {
       ...createRoomDto,
       image,
     };
-    return this.roomsService.create(set);
+    return this.roomsService.create(set, admin);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/')
   getAllRooms(@Query() q: ListQueryParamsRoomDTO) {
     const queryString: ListBasicOperationRoom =
@@ -43,6 +53,8 @@ export class RoomsController {
     return this.roomsService.findAll(queryString);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/all')
   findAllExcludeStatus(@Query() q: ListQueryParamsRoomDTO) {
     const queryString: ListBasicOperationRoom =
@@ -50,16 +62,22 @@ export class RoomsController {
     return this.roomsService.findAllExcludeStatus(queryString);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/floor/:floor')
   findByFloor(@Param('floor') floor) {
     return this.roomsService.findByFloor(floor);
   }
 
+  @Roles(['user', 'admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.roomsService.findOneById(+id);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id/')
   @UseInterceptors(FileInterceptor('image'))
   update(
@@ -74,6 +92,8 @@ export class RoomsController {
     return this.roomsService.update(+id, set);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id/status')
   updateStatus(
     @Param('id') id: string,
@@ -82,6 +102,8 @@ export class RoomsController {
     return this.roomsService.updateStatus(+id, updateRoomDto);
   }
 
+  @Roles(['admin'])
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/:id')
   remove(@Param('id') id: string) {
     return this.roomsService.remove(+id);

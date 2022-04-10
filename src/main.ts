@@ -2,9 +2,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
+import getLogLevels from 'logger/getLogLevels';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: getLogLevels(process.env.NODE_ENV === 'production'),
+  });
 
   app.enableCors();
 

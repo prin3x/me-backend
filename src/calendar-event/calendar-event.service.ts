@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { CalendarEvent } from './entities/calendar-event.entity';
@@ -9,6 +9,7 @@ import { StaffContactsService } from 'staff-contacts/staff-contacts.service';
 import { nanoid } from 'nanoid';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
+import { IAuthPayload } from 'auth/auth.decorator';
 
 export interface HolidaysData {
   HolidayWeekDay: string;
@@ -31,6 +32,8 @@ export interface HolidaysResponseFromBOT {
 
 @Injectable()
 export class CalendarEventService {
+  private readonly logger = new Logger(CalendarEventService.name);
+
   constructor(
     @InjectRepository(CalendarEvent)
     private repo: Repository<CalendarEvent>,
@@ -48,6 +51,7 @@ export class CalendarEventService {
   }
 
   async findAll(opt: ListQueryCalendarDTO) {
+    this.logger.log(`Fn: ${this.findAll.name}`);
     let rfe, rtn, rtc;
     try {
       rfe = await this.repo.find({
@@ -78,14 +82,17 @@ export class CalendarEventService {
       });
       rtn = [...rfe, ...tempRtc];
     } catch (e) {
-      console.error(e);
+      this.logger.error(`Fn: ${this.findAll.name}`);
       throw new BadRequestException(e);
     }
 
     return rtn;
   }
 
-  async create(_calendarEvent: CreateCalendarEventDto) {
+  async create(_calendarEvent: CreateCalendarEventDto, auth: IAuthPayload) {
+    this.logger.log(
+      `Fn: ${this.create.name}, Params: ${_calendarEvent.title}, Auth: ${auth.id}`,
+    );
     let res;
 
     const calendarEventInstance = new CalendarEvent();
@@ -95,10 +102,14 @@ export class CalendarEventService {
     calendarEventInstance.end = new Date(_calendarEvent.end);
     calendarEventInstance.allDay = _calendarEvent.allDay;
     calendarEventInstance.categoryName = _calendarEvent.categoryName;
+    calendarEventInstance.createdBy = auth.id;
 
     try {
       res = await this.repo.save(calendarEventInstance);
     } catch (e) {
+      this.logger.error(
+        `Fn: ${this.create.name}, Params: ${_calendarEvent.title}, Auth: ${auth.id}`,
+      );
       throw Error(e);
     }
 
@@ -106,6 +117,7 @@ export class CalendarEventService {
   }
 
   async update(id: number, _calendarEvent: UpdateCalendarEventDto) {
+    this.logger.log(`Fn: ${this.update.name}, Params: id => ${id}`);
     let res;
 
     const calendarEventInstance = new CalendarEvent();
@@ -120,6 +132,7 @@ export class CalendarEventService {
     try {
       res = await this.repo.save(calendarEventInstance);
     } catch (e) {
+      this.logger.error(`Fn: ${this.update.name}, Params: id => ${id}`);
       throw Error(e);
     }
 
@@ -127,6 +140,7 @@ export class CalendarEventService {
   }
 
   async remove(id: number) {
+    this.logger.log(`Fn: ${this.remove.name}, Params: id => ${id}`);
     let res;
 
     const calendarEventInstance = new CalendarEvent();
@@ -135,6 +149,7 @@ export class CalendarEventService {
     try {
       res = await this.repo.delete({ id });
     } catch (e) {
+      this.logger.error(`Fn: ${this.remove.name}, Params: id => ${id}`);
       throw Error(e);
     }
 
@@ -146,6 +161,11 @@ export class CalendarEventService {
   }
 
   async saveHolidays() {
+    this.logger.log(
+      `Fn: ${
+        this.saveHolidays.name
+      }, Params: id => ${new Date().toISOString()}`,
+    );
     const config = {
       method: 'GET',
       url: 'https://apigw1.bot.or.th/bot/public/financial-institutions-holidays/',
@@ -176,10 +196,33 @@ export class CalendarEventService {
 
     try {
       for (let i = 0; i < mapData.length; i++) {
-        await this.create(mapData[i]);
+        await this.create(mapData[i], {
+          id: 0,
+          profilePicUrl: '',
+          name: '',
+          nameTH: '',
+          nickname: '',
+          company: '',
+          department: '',
+          division: '',
+          ipPhone: '',
+          email: '',
+          position: '',
+          staffId: '',
+          status: '',
+          birthDate: undefined,
+          hash: '',
+          createdBy: 0,
+          createdDate: undefined,
+          updatedDate: undefined,
+        });
       }
     } catch (e) {
-      console.error(e);
+      this.logger.error(
+        `Fn: ${
+          this.saveHolidays.name
+        }, Params: id => ${new Date().toISOString()}`,
+      );
       throw new BadRequestException(e);
     }
   }
