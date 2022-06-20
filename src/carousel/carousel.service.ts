@@ -48,7 +48,9 @@ export class CarouselService {
     let carouselList: Carousel[];
     try {
       const rawCarouselList = await this.repo.find({
-        status: CAROUSEL_STATUS.ENABLED,
+        where: {
+          status: CAROUSEL_STATUS.ENABLED,
+        },
       });
       carouselList = rawCarouselList.map((_carouselInfo: Carousel) => {
         const imageBase64 = base64Encode(
@@ -97,13 +99,13 @@ export class CarouselService {
   }
 
   async findOne(id: number) {
-    return await this.repo.findOne(id);
+    return await this.repo.findOne({ where: { id } });
   }
 
   async findOneById(id: number) {
     let res: Carousel;
     try {
-      res = await this.repo.findOne({ id });
+      res = await this.repo.findOne({ where: { id } });
     } catch (error) {
       throw new NotFoundException('Id Not Found');
     }

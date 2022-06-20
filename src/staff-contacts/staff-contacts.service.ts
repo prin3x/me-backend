@@ -169,11 +169,11 @@ export class StaffContactsService {
   }
 
   async findOne(id: string) {
-    return await this.repo.findOne(id);
+    return await this.repo.findOne({ where: { id: +id } });
   }
 
   async findOneByEmail(email: string) {
-    return await this.repo.findOne({ email });
+    return await this.repo.findOne({ where: { email } });
   }
 
   async comparePassword(password: string, hash: string): Promise<boolean> {

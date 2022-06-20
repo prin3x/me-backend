@@ -15,8 +15,8 @@ export class AdminsService {
     return this.repo.find();
   }
 
-  async findOne(_username): Promise<Admin> {
-    return this.repo.findOne({ username: _username });
+  async findOne(_username: string): Promise<Admin> {
+    return this.repo.findOne({ where: { username: _username } });
   }
 
   async regisAdmin(registerAdminDto: RegisterAdminDto) {

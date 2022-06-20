@@ -185,11 +185,11 @@ export class RoomsService {
   }
 
   async findByFloor(_floor: string): Promise<Room[]> {
-    return await this.repo.find({ floor: _floor });
+    return await this.repo.find({ where: { floor: _floor } });
   }
 
   async findOne(id: number) {
-    return await this.repo.findOne({ id: id });
+    return await this.repo.findOne({ where: { id: id } });
   }
 
   async findOneById(id: number): Promise<Room> {
@@ -197,7 +197,7 @@ export class RoomsService {
     `);
     let res: Room;
     try {
-      res = await this.repo.findOne({ id });
+      res = await this.repo.findOne({ where: { id } });
     } catch (error) {
       this.logger.error(`Fn: ${this.findOneById.name}, Params: ${id}`);
       throw new NotFoundException('Id Not Found');

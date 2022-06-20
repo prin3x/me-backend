@@ -18,7 +18,7 @@ export enum POST_STATUS {
 @Entity()
 export class Post {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number | string;
 
   @Column({ nullable: true })
   imageUrl: string;

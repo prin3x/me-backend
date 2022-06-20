@@ -55,8 +55,10 @@ export class CalendarEventService {
     let rfe, rtn, rtc;
     try {
       rfe = await this.repo.find({
-        start: MoreThan(opt.startDate),
-        end: LessThan(opt.endDate),
+        where: {
+          start: MoreThan(opt.startDate),
+          end: LessThan(opt.endDate),
+        },
       });
       const set = {} as any;
       set.startDate = opt.startDate;

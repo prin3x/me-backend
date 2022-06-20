@@ -27,6 +27,14 @@ import configuration from 'config/configuration';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Carousel } from 'carousel/entities/carousel.entity';
 import { CarouselModule } from './carousel/carousel.module';
+import { ServiceContact } from 'service-contact/entities/service-contact.entity';
+import { ServiceContactCategory } from 'service-contact-categories/entities/service-contact-categories.entity';
+import { ServiceContactModule } from 'service-contact/service-contact.module';
+import { ServiceContactCategoryModule } from 'service-contact-categories/service-contact-categories.module';
+import { FormsRequestCategoriesModule } from './forms-request-categories/forms-request-categories.module';
+import { FormsRequestModule } from './forms-request/forms-request.module';
+import { FormsRequest } from './forms-request/entities/forms-request.entity';
+import { FormsRequestCategory } from './forms-request-categories/entities/forms-request-category.entity';
 
 @Module({
   imports: [
@@ -55,6 +63,10 @@ import { CarouselModule } from './carousel/carousel.module';
           User,
           MeetingEvent,
           Carousel,
+          ServiceContact,
+          ServiceContactCategory,
+          FormsRequest,
+          FormsRequestCategory,
         ],
       }),
     }),
@@ -71,6 +83,10 @@ import { CarouselModule } from './carousel/carousel.module';
     MeetingEventsModule,
     S3Service,
     CarouselModule,
+    ServiceContactModule,
+    ServiceContactCategoryModule,
+    FormsRequestModule,
+    FormsRequestCategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

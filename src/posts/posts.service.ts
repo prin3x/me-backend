@@ -131,13 +131,13 @@ export class PostsService {
   }
 
   async findByCategoryId(_id: string) {
-    return await this.repo.find({ where: { categoryId: _id } });
+    return await this.repo.find({ where: { categoryDetail: +_id } });
   }
 
   async findOneBySlug(slug: string) {
     let res: Post;
     try {
-      res = await this.repo.findOne({ slug });
+      res = await this.repo.findOne({ where: { slug } });
     } catch (error) {
       throw new NotFoundException('Slug Not Found');
     }
@@ -149,13 +149,13 @@ export class PostsService {
   }
 
   async findOne(id: number) {
-    return await this.repo.findOne(id);
+    return await this.repo.findOne({ where: { id } });
   }
 
   async update(slug: string, updatePostDto: UpdatePostDto) {
     let res;
 
-    const newsInsance = await this.repo.findOne({ slug });
+    const newsInsance = await this.repo.findOne({ where: { slug } });
     newsInsance.title = updatePostDto.title;
     newsInsance.content = updatePostDto.content;
     newsInsance.categoryName = updatePostDto.categoryName;

@@ -128,9 +128,15 @@ export class MeetingEventsService {
     let res;
     try {
       res = await this.repo.find({
-        roomId: roomId,
-        start: MoreThanOrEqual(moment(targetDate).startOf('day').toISOString()),
-        end: LessThanOrEqual(moment(targetDate).endOf('day').toISOString()),
+        where: {
+          roomId: roomId,
+          start: MoreThanOrEqual(
+            moment(targetDate).startOf('day').toISOString() as unknown as Date,
+          ),
+          end: LessThanOrEqual(
+            moment(targetDate).endOf('day').toISOString() as unknown as Date,
+          ),
+        },
       });
     } catch (error) {
       throw new BadRequestException(error);
@@ -140,14 +146,14 @@ export class MeetingEventsService {
   }
 
   async findOne(id: number) {
-    return await this.repo.findOne(id);
+    return await this.repo.findOne({ where: { id } });
   }
 
   async findOneAndOwner(id: number, user: IAuthPayload) {
     this.logger.log(`Fn: ${this.findOneAndOwner.name}`);
     let res, rtn;
     try {
-      res = await this.repo.findOne(id);
+      res = await this.repo.findOne({ where: { id } });
       rtn = {
         ...res,
         isOwner: res.createdBy === user.id,
