@@ -21,7 +21,6 @@ import { User } from 'users/entities/user.entity';
 import { Post } from 'posts/entities/post.entity';
 import { MeetingEventsModule } from './meeting-events/meeting-events.module';
 import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
-import { S3Service } from 's3/s3.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'config/configuration';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -101,7 +100,6 @@ import { join } from 'path';
     RoomsModule,
     UsersModule,
     MeetingEventsModule,
-    S3Service,
     CarouselModule,
     ServiceContactModule,
     ServiceContactCategoryModule,
