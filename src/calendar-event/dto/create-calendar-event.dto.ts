@@ -19,4 +19,8 @@ export class CreateCalendarEventDto {
 
   @IsString()
   categoryName: string;
+
+  @IsOptional()
+  @IsString()
+  hyperlink: string;
 }

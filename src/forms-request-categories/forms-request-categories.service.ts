@@ -31,6 +31,12 @@ export class FormsRequestCategoriesService {
       res = await this.repo.find({
         where: { status: FORM_CATEGORY_STATUS.ENABLED },
         relations: ['formsRequestDetail'],
+        order: {
+          index: 'ASC',
+          formsRequestDetail: {
+            index: 'ASC',
+          },
+        },
       });
     } catch (e) {
       this.logger.error(e);
@@ -69,6 +75,31 @@ export class FormsRequestCategoriesService {
     return res;
   }
 
+  async updateIndex(id: string, index: number) {
+    this.logger.log(`Fn: ${this.update.name}, index: ${index}
+    `);
+    let serviceContact;
+    try {
+      serviceContact = await this.repo.findOne({ where: { id } });
+      if (!serviceContact) throw new NotFoundException();
+
+      const swapContact = await this.repo.findOne({
+        where: { index: index },
+      });
+
+      swapContact.index = serviceContact.index;
+      serviceContact.index = index;
+
+      await this.repo.save([serviceContact, swapContact]);
+    } catch (e) {
+      this.logger.error(`Fn: ${this.updateIndex.name}, id: ${id}
+      `);
+      throw new BadRequestException(e);
+    }
+
+    return serviceContact;
+  }
+
   async update(id: string, categoryDto: UpdateFormsRequestCategoryDto) {
     this.logger.log(`Fn: ${this.update.name}, Params: ${id}
     `);
@@ -94,6 +125,18 @@ export class FormsRequestCategoriesService {
     `);
     let category;
     try {
+      const formReq = await this.repo.findOne({ where: { id: id } });
+      if (!formReq) throw new NotFoundException('Unable to find target');
+
+      const swapContact = await this.repo.findOne({
+        where: { index: formReq.index + 1 },
+      });
+
+      if (swapContact) {
+        swapContact.index = formReq.index;
+
+        await this.repo.save(swapContact);
+      }
       await this.repo.delete(id);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Params: ${id}

@@ -46,7 +46,11 @@ export class AuthService {
       );
 
       if (isValid) {
-        payload = { username: _admin.username, id: _admin.id };
+        payload = {
+          username: _admin.username,
+          id: _admin.id,
+          role: _admin.role,
+        };
       }
     } catch (e) {
       throw new UnauthorizedException('Unable to login user');

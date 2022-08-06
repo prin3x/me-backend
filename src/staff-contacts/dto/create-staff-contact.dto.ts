@@ -7,7 +7,7 @@ export class CreateStaffContactDto {
 
   @IsOptional()
   @IsString()
-  profilePicUrl: string;
+  profilePicUrl: any;
 
   @IsOptional()
   @IsString()

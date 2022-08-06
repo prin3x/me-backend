@@ -10,6 +10,11 @@ import { nanoid } from 'nanoid';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { IAuthPayload } from 'auth/auth.decorator';
+import moment from 'moment';
+import {
+  ListQueryCalendarByCategoryDTO,
+  ListQueryStringByCategory,
+} from './dto/find-event.dto';
 
 export interface HolidaysData {
   HolidayWeekDay: string;
@@ -65,7 +70,7 @@ export class CalendarEventService {
       rtc = await this.contactService.findAllBirthday(set);
       const tempRtc = rtc?.items.map((_item) => {
         let bd = _item.birthDate.split('-');
-        bd[0] = '2022';
+        bd[0] = set.startDate.split('-')?.[0];
         bd = bd.join('-');
         return {
           id: nanoid(),
@@ -84,11 +89,77 @@ export class CalendarEventService {
       });
       rtn = [...rfe, ...tempRtc];
     } catch (e) {
-      this.logger.error(`Fn: ${this.findAll.name}`);
+      this.logger.error(`Fn: ${this.findAll.name}`, e);
       throw new BadRequestException(e);
     }
 
     return rtn;
+  }
+
+  async findFromCategory(opt: ListQueryStringByCategory) {
+    this.logger.log(`Fn: ${this.findFromCategory.name}`);
+    let rfe, rtn, rtc, paginationRtn, total;
+    try {
+      rfe = await this.repo.find({
+        where: {
+          start: MoreThan(new Date('2022-01-01')),
+          end: LessThan(new Date(opt.year + '-12-31')),
+          categoryName: opt.category,
+        },
+        skip: opt.skip,
+        take: opt.limit,
+      });
+
+      const totalFounds = await this.repo.find({
+        where: {
+          categoryName: opt.category,
+        },
+      });
+
+      total = totalFounds.length;
+
+      rtn = [...rfe];
+
+      if (opt.category === 'birthday') {
+        const startDate = opt.year + '-01-01';
+        const set = {} as any;
+        set.startDate = startDate;
+        rtc = await this.contactService.findAllBirthday(set);
+        const tempRtc = rtc?.items.map((_item) => {
+          let bd = _item.birthDate.split('-');
+          bd[0] = set.startDate.split('-')?.[0];
+          bd = bd.join('-');
+          return {
+            id: nanoid(),
+            title: `วันเกิด ${_item.nickname} - ${_item.section}`,
+            staffId: _item.id,
+            description: '',
+            start: bd,
+            end: bd,
+            allDay: true,
+            createdDate: _item?.createdDate,
+            updatedDate: _item?.updatedDate,
+            createdBy: 0,
+            categoryName: 'birthday',
+            roomIds: null,
+          };
+        });
+        rtn = [...rfe, ...tempRtc];
+        total = rtc.total;
+      }
+
+      paginationRtn = {
+        items: rtn,
+        itemCount: rtn.length,
+        total: total,
+        page: opt.page,
+      };
+    } catch (e) {
+      this.logger.error(`Fn: ${this.findFromCategory.name}`, e);
+      throw new BadRequestException(e);
+    }
+
+    return paginationRtn;
   }
 
   async create(_calendarEvent: CreateCalendarEventDto, auth: IAuthPayload) {
@@ -100,11 +171,13 @@ export class CalendarEventService {
     const calendarEventInstance = new CalendarEvent();
     calendarEventInstance.title = _calendarEvent.title;
     calendarEventInstance.description = _calendarEvent.description;
+    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
     calendarEventInstance.allDay = _calendarEvent.allDay;
     calendarEventInstance.categoryName = _calendarEvent.categoryName;
     calendarEventInstance.createdBy = auth.id;
+    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
 
     try {
       res = await this.repo.save(calendarEventInstance);
@@ -128,8 +201,9 @@ export class CalendarEventService {
     calendarEventInstance.description = _calendarEvent.description;
     calendarEventInstance.start = new Date(_calendarEvent.start);
     calendarEventInstance.end = new Date(_calendarEvent.end);
-    calendarEventInstance.allDay = false;
+    calendarEventInstance.allDay = _calendarEvent.allDay;
     calendarEventInstance.categoryName = _calendarEvent.categoryName;
+    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
 
     try {
       res = await this.repo.save(calendarEventInstance);
@@ -144,9 +218,6 @@ export class CalendarEventService {
   async remove(id: number) {
     this.logger.log(`Fn: ${this.remove.name}, Params: id => ${id}`);
     let res;
-
-    const calendarEventInstance = new CalendarEvent();
-    calendarEventInstance.id = id;
 
     try {
       res = await this.repo.delete({ id });
@@ -193,6 +264,7 @@ export class CalendarEventService {
         end: new Date(_item.Date).toISOString(),
         allDay: true,
         categoryName: 'holiday',
+        hyperlink: '',
       };
     });
 
@@ -227,5 +299,28 @@ export class CalendarEventService {
       );
       throw new BadRequestException(e);
     }
+  }
+
+  parseQueryString(
+    q: ListQueryCalendarByCategoryDTO,
+  ): ListQueryStringByCategory {
+    const rtn: ListQueryStringByCategory = {
+      page: +q?.page || 1,
+      limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 20,
+      skip: (q?.page - 1) * q?.limit,
+      orderBy: q?.orderBy || 'id',
+      order: q.order === 'DESC' ? 'DESC' : 'ASC',
+      search: q?.search ? q?.search.trim() : '',
+      year: q?.year || '2022',
+      category: q?.category || '',
+      startDate: undefined,
+      endDate: undefined,
+    };
+
+    rtn.startDate = q?.month;
+
+    rtn.skip = (rtn.page - 1) * rtn.limit;
+
+    return rtn;
   }
 }

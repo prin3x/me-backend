@@ -23,6 +23,9 @@ export class Post {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @Column({ nullable: true })
+  homeImageUrl: string;
+
   @Column()
   title: string;
 
@@ -35,8 +38,17 @@ export class Post {
   @Column({ default: 0 })
   adminId: number;
 
+  @Column({ type: 'varchar', default: '' })
+  description: string;
+
+  @Column({ default: 0, type: 'integer' })
+  readers: number;
+
   @Column()
   categoryName: string;
+
+  @Column()
+  postBy: string;
 
   @Column()
   slug: string;

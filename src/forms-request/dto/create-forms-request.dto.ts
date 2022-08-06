@@ -1,4 +1,9 @@
-import { IsNumberString, IsString } from 'class-validator';
+import {
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateFormsRequestDto {
   @IsString()
@@ -8,5 +13,11 @@ export class CreateFormsRequestDto {
   downloadLink: string;
 
   @IsNumberString()
-  categoryDetail: number;
+  categoryId: number;
+
+  @IsOptional()
+  file: any;
+
+  @IsNumber()
+  index: number;
 }

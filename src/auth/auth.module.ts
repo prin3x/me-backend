@@ -5,11 +5,11 @@ import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { AdminsModule } from 'admins/admins.module';
 import { UsersModule } from 'users/users.module';
-import { StaffContact } from 'staff-contacts/entities/staff-contact.entity';
 import { StaffContactsModule } from 'staff-contacts/staff-contacts.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import configuration from 'config/configuration';
 
 @Module({
   imports: [
@@ -17,12 +17,20 @@ import { StaffContactsModule } from 'staff-contacts/staff-contacts.module';
     AdminsModule,
     PassportModule,
     StaffContactsModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '10d' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          secret: configService.get<string>('jwt.jwtSecret'),
+        };
+      },
+      inject: [ConfigService],
+    }),
+    ConfigModule.forRoot({
+      load: [configuration],
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

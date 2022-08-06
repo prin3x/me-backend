@@ -18,7 +18,7 @@ import { UpdateStaffContactDto } from './dto/update-staff-contact.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ListQueryParamsContactDTO } from './dto/get-staff-contact.dto';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
-import { RolesGuard } from 'auth/roles.guard';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
@@ -26,7 +26,7 @@ import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 export class StaffContactsController {
   constructor(private readonly staffContactsService: StaffContactsService) {}
 
-  @Roles(['admin'])
+  @Roles([ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
@@ -46,7 +46,7 @@ export class StaffContactsController {
    * It returns all the staff contacts.
    * @param {ListQueryCalendarDTO} q - ListQueryCalendarDTO
    */
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/')
   findAll(@Query() q: ListQueryParamsContactDTO) {
@@ -54,7 +54,12 @@ export class StaffContactsController {
     return this.staffContactsService.findAll(queryString);
   }
 
-  @Roles(['user', 'admin'])
+  @Get('/options')
+  retrieveAllStaffOptions() {
+    return this.staffContactsService.retrieveAllStaffOptions();
+  }
+
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/birthday')
   findAllBirthDay(@Query() q: ListQueryParamsContactDTO) {
@@ -62,7 +67,7 @@ export class StaffContactsController {
     return this.staffContactsService.findAllBirthday(queryString);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
   findOne(@Param('id') id: string) {

@@ -18,6 +18,12 @@ import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { IAuthPayload } from 'auth/auth.decorator';
+import { DepartmentService } from 'department/department.service';
+import { DivisionService } from 'division/division.service';
+import { CompanyService } from 'company/company.service';
+import { Company } from 'company/entities/company.entity';
+import { Department } from 'department/entities/department.entity';
+import { Division } from 'division/entities/division.entity';
 
 @Injectable()
 export class StaffContactsService {
@@ -27,7 +33,32 @@ export class StaffContactsService {
     private repo: Repository<StaffContact>,
     private s3Service: S3Service,
     private config: ConfigService,
+    private departmentService: DepartmentService,
+    private divisionService: DivisionService,
+    private companyService: CompanyService,
   ) {}
+
+  async retrieveAllStaffOptions() {
+    let company: Company[] = [];
+    let department: Department[] = [];
+    let division: Division[] = [];
+    let res;
+    try {
+      company = await this.companyService.findAll();
+      department = await this.departmentService.findAll();
+      division = await this.divisionService.findAll();
+
+      res = {
+        company,
+        division,
+        department,
+      };
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+
+    return res;
+  }
 
   async create(
     createStaffContactDto: CreateStaffContactDto,
@@ -36,6 +67,7 @@ export class StaffContactsService {
     this.logger.log(
       `Fn: ${this.create.name}, Params: ${createStaffContactDto.name}, Auth: ${auth.id}`,
     );
+
     let res;
 
     const staffInstance = new StaffContact();
@@ -50,7 +82,7 @@ export class StaffContactsService {
     staffInstance.staffId = createStaffContactDto.staffId;
     staffInstance.section = createStaffContactDto.section;
     staffInstance.position = createStaffContactDto.position;
-    staffInstance.hash = await bcrypt.hash(createStaffContactDto.hash, 3);
+    staffInstance.hash = await bcrypt.hash('123456', 3);
 
     // mock
     staffInstance.createdBy = auth.id;
@@ -101,7 +133,6 @@ export class StaffContactsService {
   async findAll(opt: ListBasicOperationContact) {
     this.logger.log(`Fn: ${this.findAll.name}`);
     let res;
-
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
@@ -115,11 +146,12 @@ export class StaffContactsService {
         .andWhere('StaffContact.company LIKE :company', {
           company: `${opt.company || '%'}`,
         })
+        .orderBy(opt.orderBy, opt.order)
         .skip(opt.skip)
         .take(opt.limit)
         .getManyAndCount();
     } catch (e) {
-      this.logger.error(`Fn: ${this.findAll.name}`);
+      this.logger.error(`Fn: ${this.findAll.name}`, e);
       throw new BadRequestException(e);
     }
 
@@ -239,9 +271,6 @@ export class StaffContactsService {
     this.logger.log(`Fn: ${this.remove.name}`);
     let res;
 
-    const staffContactInstance = new StaffContact();
-    staffContactInstance.id = id;
-
     try {
       res = await this.repo.delete({ id });
     } catch (e) {
@@ -262,7 +291,7 @@ export class StaffContactsService {
       limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 10,
       skip: (q?.page - 1) * q?.limit,
       orderBy: q?.orderBy || 'id',
-      order: 'ASC',
+      order: q.order === 'descend' ? 'DESC' : 'ASC',
       search: q?.search ? q?.search.trim() : '',
       department: q?.department || '',
       company: q?.company || '',
@@ -273,8 +302,6 @@ export class StaffContactsService {
     rtn.startDate = q?.startDate;
     rtn.endDate = q?.endDate;
 
-    q.order = q?.order ? q?.order.toUpperCase() : '';
-    rtn.order = q?.order != 'ASC' && q?.order != 'DESC' ? 'DESC' : q?.order;
     rtn.skip = (rtn.page - 1) * rtn.limit;
 
     return rtn;

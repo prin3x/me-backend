@@ -74,6 +74,7 @@ export class CarouselService {
       query.where('(carousel.title LIKE :search)', {
         search: `%${opt.search}%`,
       });
+      query.orderBy('updatedDate', 'DESC');
       query.skip(opt.skip).take(opt.limit);
 
       res = await query.getManyAndCount();

@@ -21,7 +21,7 @@ import {
 } from './dto/get-room.dto';
 import { Roles } from 'auth/roles.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
-import { RolesGuard } from 'auth/roles.guard';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
 @Controller('rooms')
@@ -44,7 +44,7 @@ export class RoomsController {
     return this.roomsService.create(set, admin);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/')
   getAllRooms(@Query() q: ListQueryParamsRoomDTO) {
@@ -53,7 +53,7 @@ export class RoomsController {
     return this.roomsService.findAll(queryString);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/all')
   findAllExcludeStatus(@Query() q: ListQueryParamsRoomDTO) {
@@ -62,14 +62,14 @@ export class RoomsController {
     return this.roomsService.findAllExcludeStatus(queryString);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/floor/:floor')
   findByFloor(@Param('floor') floor) {
     return this.roomsService.findByFloor(floor);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/:id')
   findOne(@Param('id') id: string) {

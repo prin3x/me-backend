@@ -27,6 +27,9 @@ export class ServiceContactCategory {
   @Column({ default: SERVICE_CONTACT_STATUS.ENABLED })
   status: SERVICE_CONTACT_STATUS;
 
+  @Column({ default: 0 })
+  index: number;
+
   @CreateDateColumn()
   createdDate: Date;
 

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { Roles } from 'auth/roles.decorator';
-import { RolesGuard } from 'auth/roles.guard';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { CalendarEventCategoryService } from './calendar-event-category.service';
 import { CreateCalendarEventCategoryDto } from './dto/create-calendar-event-category.dto';
 import { UpdateCalendarEventCategoryDto } from './dto/update-calendar-event-category.dto';
@@ -32,14 +32,14 @@ export class CalendarEventCategoryController {
     );
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll() {
     return this.calendarEventCategoryService.findAll();
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {

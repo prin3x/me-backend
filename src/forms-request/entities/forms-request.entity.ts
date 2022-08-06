@@ -25,11 +25,20 @@ export class FormsRequest {
   @Column()
   downloadLink: string;
 
+  @Column({ default: '', nullable: true })
+  filePath: string;
+
   @Column({ default: FORM_STATUS.ENABLED })
   status: FORM_STATUS;
 
   @Column()
   adminId: number;
+
+  @Column({ default: 0 })
+  index: number;
+
+  @Column()
+  categoryId: number;
 
   @CreateDateColumn()
   createdDate: Date;
@@ -44,6 +53,6 @@ export class FormsRequest {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn()
+  @JoinColumn({ name: 'categoryId' })
   categoryDetail: number;
 }

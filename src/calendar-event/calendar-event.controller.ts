@@ -16,14 +16,15 @@ import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { Cron } from '@nestjs/schedule';
 import { Roles } from 'auth/roles.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
-import { RolesGuard } from 'auth/roles.guard';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
+import { ListQueryCalendarByCategoryDTO } from './dto/find-event.dto';
 
 @Controller('calendar-event')
 export class CalendarEventController {
   constructor(private readonly calendarEventService: CalendarEventService) {}
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   create(
@@ -39,21 +40,29 @@ export class CalendarEventController {
     return this.calendarEventService.saveHolidays();
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll(@Query() q: ListQueryCalendarDTO) {
     return this.calendarEventService.findAll(q);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('/list')
+  findFromCategory(@Query() q: ListQueryCalendarByCategoryDTO) {
+    const parsedQuery = this.calendarEventService.parseQueryString(q);
+    return this.calendarEventService.findFromCategory(parsedQuery);
+  }
+
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.calendarEventService.findOne(+id);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   update(
@@ -63,7 +72,7 @@ export class CalendarEventController {
     return this.calendarEventService.update(+id, updateCalendarEventDto);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {

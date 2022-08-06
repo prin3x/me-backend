@@ -9,29 +9,54 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  UploadedFiles,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import {
   ListBasicOperationPost,
   ListQueryParamsPostDTO,
 } from './dto/get-post.dto';
 import { UpdateStatus } from './dto/update-status.dto';
+import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
+import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  create(@UploadedFile() image: Express.Multer.File, @Body() createPostDto) {
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'homeImage', maxCount: 1 },
+    ]),
+  )
+  create(
+    @UploadedFiles()
+    files: { image?: Express.Multer.File[]; homeImage?: Express.Multer.File[] },
+    @Body() createPostDto,
+    @AuthPayload() authPayload: IAuthPayload,
+  ) {
     const set: CreatePostDto = {
       ...createPostDto,
-      image,
+      image: files.image?.[0],
+      homeImage: files.homeImage?.[0],
     };
-    return this.postsService.create(set);
+    return this.postsService.create(set, authPayload);
+  }
+
+  @Post('/read/:id')
+  incrementReders(@Query('id') id: number) {
+    return this.postsService.incrementReders(id);
   }
 
   @Get('/all')
@@ -59,16 +84,25 @@ export class PostsController {
   }
 
   @Patch(':slug')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 1 },
+      { name: 'homeImage', maxCount: 1 },
+    ]),
+  )
   update(
     @Param('slug') slug: string,
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFiles()
+    files: { image?: Express.Multer.File[]; homeImage?: Express.Multer.File[] },
     @Body() updatePostDto: UpdatePostDto,
+    @AuthPayload() authPayload: IAuthPayload,
   ) {
     const set: UpdatePostDto = {
       ...updatePostDto,
-      image,
+      image: files.image?.[0],
+      homeImage: files.homeImage?.[0],
     };
-    return this.postsService.update(slug, set);
+    return this.postsService.update(slug, set, authPayload);
   }
 
   @Patch(':id/status')

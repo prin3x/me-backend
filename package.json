@@ -29,6 +29,7 @@
     "@nestjs/passport": "^8.0.1",
     "@nestjs/platform-express": "^7.5.1",
     "@nestjs/schedule": "^1.0.2",
+    "@nestjs/serve-static": "^3.0.0",
     "@nestjs/typeorm": "^8.0.2",
     "aws-sdk": "^2.1066.0",
     "axios": "^0.25.0",
@@ -50,7 +51,8 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7",
     "sqlite3": "^5.0.2",
-    "typeorm": "^0.3.6"
+    "typeorm": "^0.3.6",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.2.6",

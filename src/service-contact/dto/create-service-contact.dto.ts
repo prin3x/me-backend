@@ -1,4 +1,9 @@
-import { IsNumberString, IsOptional, IsString } from 'class-validator';
+import {
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateServiceContactDto {
   @IsString()
@@ -16,5 +21,8 @@ export class CreateServiceContactDto {
   name: string;
 
   @IsNumberString()
-  categoryDetail: number;
+  categoryId: number;
+
+  @IsNumber()
+  index: number;
 }

@@ -6,10 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
+import { normalParseQueryString } from 'utils/parseQuery.basic';
+import { ListQueryParamsDTO } from 'utils/query.dto';
 import { AdminsService } from './admins.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { ADMIN_STATUS } from './entities/admin.entity';
 
 @Controller('admins')
 export class AdminsController {
@@ -17,12 +21,14 @@ export class AdminsController {
 
   @Post()
   create(@Body() createAdminDto: CreateAdminDto) {
-    return this.adminsService.create(createAdminDto);
+    return this.adminsService.regisAdmin(createAdminDto);
   }
 
   @Get()
-  findAll() {
-    return this.adminsService.findAll();
+  findAll(@Query() q: ListQueryParamsDTO) {
+    console.log(q, 'qopwjepqwe');
+    const query = normalParseQueryString(q);
+    return this.adminsService.findAll(query);
   }
 
   // @Get(':id')
@@ -30,9 +36,19 @@ export class AdminsController {
   //   return this.adminsService.findOne(+id);
   // }
 
-  @Patch(':id')
+  @Patch('/:id')
   update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
     return this.adminsService.update(+id, updateAdminDto);
+  }
+
+  @Patch('/:id')
+  changePassword(@Param('id') id: string, @Body('password') password: string) {
+    return this.adminsService.changePassword(+id, password);
+  }
+
+  @Patch('/:id/status/')
+  updateStatus(@Param('id') id: string, @Body('status') status: ADMIN_STATUS) {
+    return this.adminsService.updateStatus(+id, status);
   }
 
   @Delete(':id')

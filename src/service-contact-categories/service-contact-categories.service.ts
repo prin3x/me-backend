@@ -31,6 +31,12 @@ export class ServiceContactCategoryService {
       res = await this.repo.find({
         where: { status: SERVICE_CONTACT_STATUS.ENABLED },
         relations: ['serviceContactDetail'],
+        order: {
+          index: 'ASC',
+          serviceContactDetail: {
+            index: 'ASC',
+          },
+        },
       });
     } catch (e) {
       this.logger.error(e);
@@ -69,6 +75,31 @@ export class ServiceContactCategoryService {
     return res;
   }
 
+  async updateIndex(id: string, index: number) {
+    this.logger.log(`Fn: ${this.update.name}, index: ${index}
+    `);
+    let serviceContact;
+    try {
+      serviceContact = await this.repo.findOne({ where: { id } });
+      if (!serviceContact) throw new NotFoundException();
+
+      const swapContact = await this.repo.findOne({
+        where: { index: index },
+      });
+
+      swapContact.index = serviceContact.index;
+      serviceContact.index = index;
+
+      await this.repo.save([serviceContact, swapContact]);
+    } catch (e) {
+      this.logger.error(`Fn: ${this.update.name}, id: ${id}
+      `);
+      throw new BadRequestException(e);
+    }
+
+    return serviceContact;
+  }
+
   async update(id: string, categoryDto: UpdateCategoryDto) {
     this.logger.log(`Fn: ${this.update.name}, Params: ${id}
     `);
@@ -94,6 +125,19 @@ export class ServiceContactCategoryService {
     `);
     let category;
     try {
+      const serviceContact = await this.repo.findOne({ where: { id: id } });
+      if (!serviceContact) throw new NotFoundException('Unable to find target');
+
+      const swapContact = await this.repo.findOne({
+        where: { index: serviceContact.index + 1 },
+      });
+
+      if (swapContact) {
+        swapContact.index = serviceContact.index;
+
+        await this.repo.save(swapContact);
+      }
+
       await this.repo.delete(id);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Params: ${id}

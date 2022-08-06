@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { Roles } from 'auth/roles.decorator';
-import { RolesGuard } from 'auth/roles.guard';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { CarouselService } from './carousel.service';
 import { CreateCarouselDto } from './dto/create-carousel.dto';
 import {
@@ -40,14 +40,14 @@ export class CarouselController {
     return this.carouselService.create(set);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll() {
     return this.carouselService.findAll();
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/all')
   findAllNoExclude(@Query() q: ListQueryParamsCarouselDTO) {
@@ -56,7 +56,7 @@ export class CarouselController {
     return this.carouselService.findAllNoExclude(queryString);
   }
 
-  @Roles(['user', 'admin'])
+  @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -48,6 +48,11 @@ export class FormsRequestCategoriesController {
     );
   }
 
+  @Patch('index/:id/:index')
+  updateIndex(@Param('id') id: string, @Param('index') index: number) {
+    return this.formsRequestCategoriesService.updateIndex(id, index);
+  }
+
   @Delete('/:id')
   remove(@Param('id') id: string) {
     return this.formsRequestCategoriesService.remove(id);

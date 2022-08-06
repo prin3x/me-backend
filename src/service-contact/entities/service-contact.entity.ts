@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Generated,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -36,6 +37,9 @@ export class ServiceContact {
   @Column()
   name: string;
 
+  @Column({ default: 0 })
+  index: number;
+
   @Column()
   adminId: number;
 
@@ -45,6 +49,9 @@ export class ServiceContact {
   @UpdateDateColumn()
   updatedDate: Date;
 
+  @Column()
+  categoryId: number;
+
   @ManyToOne(
     () => ServiceContactCategory,
     (serviceContactCategory) => serviceContactCategory.id,
@@ -52,6 +59,6 @@ export class ServiceContact {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn()
+  @JoinColumn({ name: 'categoryId' })
   categoryDetail: number;
 }

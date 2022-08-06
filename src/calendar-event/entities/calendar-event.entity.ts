@@ -45,6 +45,9 @@ export class CalendarEvent {
   @Column({ nullable: true })
   roomIds: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  hyperlink: string;
+
   @ManyToOne(() => Admin, { nullable: true })
   adminDetail: number;
 

@@ -26,6 +26,11 @@ export class ServiceContactCategoryController {
     return this.serviceContactCategory.findAll();
   }
 
+  @Patch('index/:id/:index')
+  updateIndex(@Param('id') id: string, @Param('index') index: number) {
+    return this.serviceContactCategory.updateIndex(id, index);
+  }
+
   @Post('/')
   create(
     @Body() createCategoryDto: CreateCategoryDto,

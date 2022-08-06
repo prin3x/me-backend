@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IAuthPayload } from 'auth/auth.decorator';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
 import { Repository } from 'typeorm';
@@ -23,18 +24,23 @@ export class PostsService {
     @InjectRepository(Post)
     private repo: Repository<Post>,
   ) {}
-  async create(createPostDto: CreatePostDto) {
+  async create(createPostDto: CreatePostDto, authPayload: IAuthPayload) {
     let res;
-
     const newsInsance = new Post();
     newsInsance.title = createPostDto.title;
     newsInsance.content = createPostDto.content;
     newsInsance.categoryName = createPostDto.categoryName;
+    newsInsance.postBy = createPostDto.postBy;
+    newsInsance.description = createPostDto.description;
     newsInsance.tag = createPostDto.tag;
-    // mock
-    newsInsance.adminId = 1;
+    newsInsance.adminId = authPayload.id;
     newsInsance.slug = `${nanoid(12)}`;
-    newsInsance.imageUrl = `${createPostDto.image.filename}`;
+    newsInsance.imageUrl = createPostDto.image?.path.replace('upload', '');
+    newsInsance.homeImageUrl =
+      createPostDto.isSameImage === 'true'
+        ? createPostDto.image?.path.replace('upload', '') ||
+          newsInsance?.imageUrl.replace('upload', '')
+        : createPostDto.homeImage?.path.replace('upload', '');
 
     try {
       res = await this.repo.save(newsInsance);
@@ -80,8 +86,13 @@ export class PostsService {
     };
 
     rtn.items = rtn.items.map((_item: Post) => {
-      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
+      const imageBase64 =
+        _item?.imageUrl && base64Encode(path.join('./upload', _item.imageUrl));
+      const homeImageBase64 =
+        _item?.homeImageUrl &&
+        base64Encode(path.join('./upload', _item.homeImageUrl));
       _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
+      _item.homeImageUrl = `data:image/png;base64, ${homeImageBase64}`;
 
       return _item;
     });
@@ -106,7 +117,7 @@ export class PostsService {
           tag: `${opt.tag}`,
         });
       }
-      query.skip(opt.skip).take(opt.limit);
+      query.skip(opt.skip).take(opt.limit).orderBy('createdDate', 'DESC');
 
       res = await query.getManyAndCount();
     } catch (e) {
@@ -143,7 +154,11 @@ export class PostsService {
     }
 
     const imageBase64 = base64Encode(path.join('./upload', res.imageUrl));
+    const homeImageBase64 = base64Encode(
+      path.join('./upload', res.homeImageUrl),
+    );
     res.imageUrl = `data:image/png;base64, ${imageBase64}`;
+    res.homeImageUrl = `data:image/png;base64, ${homeImageBase64}`;
 
     return res;
   }
@@ -152,16 +167,29 @@ export class PostsService {
     return await this.repo.findOne({ where: { id } });
   }
 
-  async update(slug: string, updatePostDto: UpdatePostDto) {
+  async update(
+    slug: string,
+    updatePostDto: UpdatePostDto,
+    authPayload: IAuthPayload,
+  ) {
     let res;
 
     const newsInsance = await this.repo.findOne({ where: { slug } });
     newsInsance.title = updatePostDto.title;
     newsInsance.content = updatePostDto.content;
     newsInsance.categoryName = updatePostDto.categoryName;
+    newsInsance.postBy = updatePostDto.postBy;
+    newsInsance.description = updatePostDto.description;
     newsInsance.tag = updatePostDto.tag;
-    // mock
-    newsInsance.adminId = 1;
+    newsInsance.imageUrl = updatePostDto.image?.path.replace('upload', '');
+    newsInsance.homeImageUrl =
+      updatePostDto.isSameImage === 'true'
+        ? updatePostDto.image?.path.replace('upload', '') ||
+          newsInsance?.imageUrl.replace('upload', '')
+        : updatePostDto.homeImage?.path.replace('upload', '');
+    newsInsance.homeImageUrl =
+      updatePostDto?.homeImage?.filename || newsInsance?.homeImageUrl;
+    newsInsance.adminId = authPayload.id;
     newsInsance.slug = `${nanoid(12)}`;
     if (updatePostDto.image) {
       newsInsance.imageUrl = `${updatePostDto.image.filename}`;
@@ -225,6 +253,21 @@ export class PostsService {
 
   async remove(id: number) {
     return await this.repo.delete(id);
+  }
+
+  async incrementReders(id: number) {
+    let res;
+
+    const newsInsance = await this.repo.findOne({ where: { id } });
+    newsInsance.readers += 1;
+
+    try {
+      res = await this.repo.save(newsInsance);
+    } catch (e) {
+      throw Error(e);
+    }
+
+    return res;
   }
 
   parseQueryString(q: ListQueryParamsPostDTO): ListBasicOperationPost {

@@ -35,13 +35,28 @@ import { FormsRequestCategoriesModule } from './forms-request-categories/forms-r
 import { FormsRequestModule } from './forms-request/forms-request.module';
 import { FormsRequest } from './forms-request/entities/forms-request.entity';
 import { FormsRequestCategory } from './forms-request-categories/entities/forms-request-category.entity';
+import { DepartmentModule } from './department/department.module';
+import { DivisionModule } from './division/division.module';
+import { CompanyModule } from './company/company.module';
+import { TagsModule } from './tags/tags.module';
+import { Company } from 'company/entities/company.entity';
+import { Department } from 'department/entities/department.entity';
+import { Division } from 'division/entities/division.entity';
+import { Tag } from 'tags/entities/tag.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        ServeStaticModule.forRoot({
+          rootPath: join(__dirname, '..', 'upload'),
+        }),
+        ConfigModule,
+      ],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         type: 'mysql',
@@ -50,6 +65,7 @@ import { FormsRequestCategory } from './forms-request-categories/entities/forms-
         username: configService.get('database.user'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
+        timezone: 'Z',
         synchronize: true,
         entities: [
           Admin,
@@ -67,6 +83,10 @@ import { FormsRequestCategory } from './forms-request-categories/entities/forms-
           ServiceContactCategory,
           FormsRequest,
           FormsRequestCategory,
+          Company,
+          Department,
+          Division,
+          Tag,
         ],
       }),
     }),
@@ -87,6 +107,10 @@ import { FormsRequestCategory } from './forms-request-categories/entities/forms-
     ServiceContactCategoryModule,
     FormsRequestModule,
     FormsRequestCategoriesModule,
+    DepartmentModule,
+    DivisionModule,
+    CompanyModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -21,6 +21,9 @@ export class FormsRequestCategory {
   @Column()
   title: string;
 
+  @Column({ default: 0 })
+  index: number;
+
   @Column({ default: FORM_CATEGORY_STATUS.ENABLED })
   status: FORM_CATEGORY_STATUS;
 

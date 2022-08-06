@@ -98,7 +98,7 @@ export class RoomsService {
     newRoom.name = createRoomDto.name;
     newRoom.floor = createRoomDto.floor;
     newRoom.description = createRoomDto.description;
-    newRoom.imageUrl = `${createRoomDto.image.filename}`;
+    newRoom.imageUrl = `${createRoomDto.image.path}`.replace('upload', '');
     newRoom.createdBy = admin.id;
 
     try {
@@ -225,7 +225,7 @@ export class RoomsService {
       newRoom.description = updateRoomDto.description;
 
       if (updateRoomDto.image) {
-        newRoom.imageUrl = `${updateRoomDto.image.filename}`;
+        newRoom.imageUrl = `${updateRoomDto.image.path}`.replace('upload', '');
       }
 
       await this.repo.save(newRoom);
@@ -245,7 +245,7 @@ export class RoomsService {
   parseQueryString(q: ListQueryParamsRoomDTO): ListBasicOperationRoom {
     const rtn: ListBasicOperationRoom = {
       page: +q?.page || 1,
-      limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 10,
+      limit: +q?.limit ? (+q?.limit > 100 ? 100 : +q?.limit) : 100,
       skip: (q?.page - 1) * q?.limit,
       orderBy: q?.orderBy || 'createdDate',
       order: 'ASC',

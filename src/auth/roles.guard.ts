@@ -1,6 +1,12 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
+export enum ADMIN_ROLES {
+  USER = 'user',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'superAdmin',
+}
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -13,13 +19,20 @@ export class RolesGuard implements CanActivate {
     let result;
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
     for (const i of roles) {
-      if (i === 'user') {
-        result = !!user.hash;
+      if (i === ADMIN_ROLES.USER) {
+        result = !!user.username;
       }
       if (result) return result;
-      if (i === 'admin') {
-        result = !!user.username;
+      if (i === ADMIN_ROLES.ADMIN) {
+        result =
+          user.role === ADMIN_ROLES.ADMIN ||
+          user.role === ADMIN_ROLES.SUPER_ADMIN;
+      }
+      if (result) return result;
+      if (i === ADMIN_ROLES.SUPER_ADMIN) {
+        result = user.role === ADMIN_ROLES.SUPER_ADMIN;
       }
     }
     return result;

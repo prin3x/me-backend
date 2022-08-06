@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import { POST_STATUS } from 'posts/entities/post.entity';
 
 export class CreatePostDto {
@@ -6,13 +6,17 @@ export class CreatePostDto {
   image: any;
 
   @IsOptional()
+  homeImage: any;
+
   @IsString()
   title: string;
 
   @IsString()
+  description: string;
+
+  @IsString()
   content: string;
 
-  @IsOptional()
   @IsString()
   status: POST_STATUS;
 
@@ -22,4 +26,10 @@ export class CreatePostDto {
 
   @IsString()
   categoryName: string;
+
+  @IsString()
+  postBy: string;
+
+  @IsString()
+  isSameImage: string;
 }

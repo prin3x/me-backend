@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { Roles } from 'auth/roles.decorator';
+import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { CreateServiceContactDto } from './dto/create-service-contact.dto';
 import { UpdateServiceContactDto } from './dto/update-service-contact.dto';
 import { ServiceContactService } from './service-conatct.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('service-contact')
 export class ServiceContactController {
   constructor(private serviceContactService: ServiceContactService) {}
@@ -43,6 +45,11 @@ export class ServiceContactController {
     @Body() updateServiceContactDto: UpdateServiceContactDto,
   ) {
     return this.serviceContactService.update(id, updateServiceContactDto);
+  }
+
+  @Patch('index/:id/:index')
+  updateIndex(@Param('id') id: string, @Param('index') index: number) {
+    return this.serviceContactService.updateIndex(id, index);
   }
 
   @Delete('/:id')

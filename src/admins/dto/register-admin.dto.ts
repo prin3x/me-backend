@@ -1,4 +1,5 @@
-import { IsString } from 'class-validator';
+import { ADMIN_ROLES } from 'auth/roles.guard';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class RegisterAdminDto {
   @IsString()
@@ -6,4 +7,8 @@ export class RegisterAdminDto {
 
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsEnum(ADMIN_ROLES)
+  role: ADMIN_ROLES;
 }

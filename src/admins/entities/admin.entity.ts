@@ -1,3 +1,4 @@
+import { ADMIN_ROLES } from 'auth/roles.guard';
 import { CalendarEvent } from 'calendar-event/entities/calendar-event.entity';
 import {
   Column,
@@ -9,6 +10,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum ADMIN_STATUS {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+}
+
 @Entity()
 export class Admin {
   @PrimaryGeneratedColumn()
@@ -19,6 +25,12 @@ export class Admin {
 
   @Column()
   password: string;
+
+  @Column({ default: ADMIN_STATUS.ENABLED })
+  status: ADMIN_STATUS;
+
+  @Column({ default: ADMIN_ROLES.ADMIN })
+  role: ADMIN_ROLES;
 
   @CreateDateColumn()
   createdDate: Date;

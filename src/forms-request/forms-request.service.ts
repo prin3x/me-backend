@@ -33,7 +33,7 @@ export class FormsRequestService {
         .leftJoin(
           FormsRequestCategory,
           'serviceCategory',
-          'serviceCategory.id = serviceContact.categoryDetail',
+          'serviceCategory.id = serviceContact.categoryId',
         )
         .getMany();
     } catch (e) {
@@ -55,6 +55,14 @@ export class FormsRequestService {
     this.logger.log(`fn: createOne, adminId : ${admin.id}`);
     let res: Response;
     try {
+      const form = new FormsRequest();
+      form.content = createForms.content;
+      form.downloadLink = createForms.downloadLink;
+      form.categoryId = createForms.categoryId;
+      form.index = createForms.index;
+      form.filePath = createForms.file
+        ? `/upload/formrequest/${createForms.file.filename}`
+        : '';
       await this.repo.save({ ...createForms, adminId: admin.id });
     } catch (e) {
       this.logger.error(e);
@@ -62,6 +70,31 @@ export class FormsRequestService {
     }
 
     return res;
+  }
+
+  async updateIndex(id: string, index: number) {
+    this.logger.log(`Fn: ${this.update.name}, index: ${index}
+    `);
+    let formRequest;
+    try {
+      formRequest = await this.repo.findOne({ where: { id: +id } });
+      if (!formRequest) throw new NotFoundException();
+
+      const swapContact = await this.repo.findOne({
+        where: { index: index, categoryId: formRequest.categoryId },
+      });
+
+      swapContact.index = +formRequest.index;
+      formRequest.index = +index;
+
+      await this.repo.save([formRequest, swapContact]);
+    } catch (e) {
+      this.logger.error(`Fn: ${this.updateIndex.name}, id: ${id}
+      `);
+      throw new BadRequestException(e);
+    }
+
+    return formRequest;
   }
 
   async update(
@@ -76,6 +109,9 @@ export class FormsRequestService {
       if (!serviceContact) throw new NotFoundException();
 
       serviceContact = { ...serviceContact, ...categoryDto };
+      serviceContact.filePath = categoryDto.file
+        ? `/upload/formrequest/${categoryDto.file.filename}`
+        : '';
 
       await this.repo.save(serviceContact);
     } catch (e) {
@@ -92,7 +128,23 @@ export class FormsRequestService {
     `);
     let category;
     try {
-      await this.repo.delete({ id: +id });
+      const formRequest = await this.repo.findOne({ where: { id: +id } });
+      if (!formRequest) throw new NotFoundException();
+
+      const swapContact = await this.repo.findOne({
+        where: {
+          index: formRequest.index + 1,
+          categoryId: formRequest.categoryId,
+        },
+      });
+
+      if (swapContact) {
+        swapContact.index = +formRequest.index;
+
+        await this.repo.save(swapContact);
+      }
+
+      await this.repo.delete(id);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Params: ${id}
       `);
