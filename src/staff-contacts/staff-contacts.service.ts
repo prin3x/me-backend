@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { S3Service } from 's3/s3.service';
 import { Repository } from 'typeorm';
 import { CreateStaffContactDto } from './dto/create-staff-contact.dto';
 import {
@@ -31,7 +30,6 @@ export class StaffContactsService {
   constructor(
     @InjectRepository(StaffContact)
     private repo: Repository<StaffContact>,
-    private s3Service: S3Service,
     private config: ConfigService,
     private departmentService: DepartmentService,
     private divisionService: DivisionService,
@@ -91,11 +89,7 @@ export class StaffContactsService {
       if (createStaffContactDto.profilePicUrl) {
         staffInstance.profilePicUrl = createStaffContactDto.profilePicUrl;
       } else if (createStaffContactDto.image) {
-        const key: any = await this.s3Service.uploadImagesS3(
-          createStaffContactDto.image,
-        );
-
-        staffInstance.profilePicUrl = key;
+        staffInstance.profilePicUrl = '';
       } else {
         staffInstance.profilePicUrl = '';
       }

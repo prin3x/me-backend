@@ -9,12 +9,12 @@ export default () => ({
     migration: process.env.MYSQL_MIGRATION,
     schema: process.env.MYSQL_DROP_SCHEMA,
   },
-  s3: {
-    awsAccessKeyID: process.env.AWS_ACCESS_KEY_ID,
-    awsSecretAccessKeyID: process.env.AWS_SECRET_ACCESS_KEY_ID,
-    awsS3BucketName: process.env.AWS_BUCKET_NAME,
-    awsSdkLoadConfig: process.env.AWS_SDK_LOAD_CONFIG,
-  },
+  // s3: {
+  //   awsAccessKeyID: process.env.AWS_ACCESS_KEY_ID,
+  //   awsSecretAccessKeyID: process.env.AWS_SECRET_ACCESS_KEY_ID,
+  //   awsS3BucketName: process.env.AWS_BUCKET_NAME,
+  //   awsSdkLoadConfig: process.env.AWS_SDK_LOAD_CONFIG,
+  // },
   jwt: {
     jwtSecret: process.env.JWT_SECRET,
     saltRound: process.env.BCRYPT_SALT,
