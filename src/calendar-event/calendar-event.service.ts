@@ -1,9 +1,14 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { CalendarEvent } from './entities/calendar-event.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { In, LessThan, MoreThan, Repository } from 'typeorm';
 import { ListQueryCalendarDTO } from 'app.dto';
 import { StaffContactsService } from 'staff-contacts/staff-contacts.service';
 import { nanoid } from 'nanoid';
@@ -100,31 +105,36 @@ export class CalendarEventService {
     this.logger.log(`Fn: ${this.findFromCategory.name}`);
     let rfe, rtn, rtc, paginationRtn, total;
     try {
-      rfe = await this.repo.find({
-        where: {
-          start: MoreThan(new Date('2022-01-01')),
-          end: LessThan(new Date(opt.year + '-12-31')),
-          categoryName: opt.category,
-        },
-        skip: opt.skip,
-        take: opt.limit,
-      });
+      if (opt.category !== 'birthday') {
+        rfe = await this.repo.find({
+          where: {
+            start: MoreThan(new Date('2022-01-01')),
+            end: LessThan(new Date(opt.year + '-12-31')),
+            categoryName: opt.category,
+          },
+          skip: opt.skip,
+          take: opt.limit,
+          order: {
+            start: 'ASC',
+          },
+        });
 
-      const totalFounds = await this.repo.find({
-        where: {
-          categoryName: opt.category,
-        },
-      });
+        const totalFounds = await this.repo.find({
+          where: {
+            categoryName: opt.category,
+          },
+        });
 
-      total = totalFounds.length;
+        total = totalFounds.length;
 
-      rtn = [...rfe];
+        rtn = [...rfe];
+      }
 
       if (opt.category === 'birthday') {
-        const startDate = opt.year + '-01-01';
         const set = {} as any;
-        set.startDate = startDate;
-        rtc = await this.contactService.findAllBirthday(set);
+        set.startDate = opt.year + '-01-01';
+        set.endDate = opt.year + '-12-31';
+        rtc = await this.contactService.findAllBirthdayWithoutMonth(set);
         const tempRtc = rtc?.items.map((_item) => {
           let bd = _item.birthDate.split('-');
           bd[0] = set.startDate.split('-')?.[0];
@@ -144,8 +154,8 @@ export class CalendarEventService {
             roomIds: null,
           };
         });
-        rtn = [...rfe, ...tempRtc];
-        total = rtc.total;
+        rtn = tempRtc;
+        total = tempRtc.length;
       }
 
       paginationRtn = {
@@ -169,18 +179,13 @@ export class CalendarEventService {
     let res;
 
     const calendarEventInstance = new CalendarEvent();
-    calendarEventInstance.title = _calendarEvent.title;
-    calendarEventInstance.description = _calendarEvent.description;
-    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
-    calendarEventInstance.start = new Date(_calendarEvent.start);
-    calendarEventInstance.end = new Date(_calendarEvent.end);
-    calendarEventInstance.allDay = _calendarEvent.allDay;
-    calendarEventInstance.categoryName = _calendarEvent.categoryName;
-    calendarEventInstance.createdBy = auth.id;
-    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
+    const newCalendarInstance = Object.assign(
+      calendarEventInstance,
+      _calendarEvent,
+    );
 
     try {
-      res = await this.repo.save(calendarEventInstance);
+      res = await this.repo.save(newCalendarInstance);
     } catch (e) {
       this.logger.error(
         `Fn: ${this.create.name}, Params: ${_calendarEvent.title}, Auth: ${auth.id}`,
@@ -195,18 +200,14 @@ export class CalendarEventService {
     this.logger.log(`Fn: ${this.update.name}, Params: id => ${id}`);
     let res;
 
-    const calendarEventInstance = new CalendarEvent();
-    calendarEventInstance.id = id;
-    calendarEventInstance.title = _calendarEvent.title;
-    calendarEventInstance.description = _calendarEvent.description;
-    calendarEventInstance.start = new Date(_calendarEvent.start);
-    calendarEventInstance.end = new Date(_calendarEvent.end);
-    calendarEventInstance.allDay = _calendarEvent.allDay;
-    calendarEventInstance.categoryName = _calendarEvent.categoryName;
-    calendarEventInstance.hyperlink = _calendarEvent.hyperlink;
-
     try {
-      res = await this.repo.save(calendarEventInstance);
+      const eventTarget = await this.findOne(`${id}`);
+
+      if (!eventTarget) throw new NotFoundException('No staff id found');
+
+      const newEventUpdated = Object.assign(eventTarget, _calendarEvent);
+
+      res = await this.repo.save(newEventUpdated);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Params: id => ${id}`);
       throw Error(e);
@@ -235,10 +236,25 @@ export class CalendarEventService {
 
   async saveHolidays() {
     this.logger.log(
-      `Fn: ${
-        this.saveHolidays.name
-      }, Params: id => ${new Date().toISOString()}`,
+      `Fn: ${this.saveHolidays.name}, Params: ${new Date().toISOString()}`,
     );
+    let allHolidaysThisYear = [];
+
+    try {
+      const query = {
+        year: '2022',
+        category: 'holiday',
+      } as ListQueryCalendarByCategoryDTO;
+      const parsedQuery = this.parseQueryString(query);
+      allHolidaysThisYear = await this.findFromCategory(parsedQuery);
+
+      const idsToRemove = allHolidaysThisYear.map((_item) => _item.id);
+
+      await this.repo.delete({ id: In(idsToRemove) });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+
     const config = {
       method: 'GET',
       url: 'https://apigw1.bot.or.th/bot/public/financial-institutions-holidays/',
@@ -254,11 +270,12 @@ export class CalendarEventService {
       .catch((e) => console.error(e));
 
     const res: HolidaysResponseFromBOT = botRes;
+
     const data = res.result.data;
 
     const mapData = data.map((_item) => {
       return {
-        title: _item.HolidayDescriptionThai,
+        title: _item.HolidayDescription,
         description: _item.HolidayDescriptionThai,
         start: new Date(_item.Date).toISOString(),
         end: new Date(_item.Date).toISOString(),
@@ -272,23 +289,7 @@ export class CalendarEventService {
       for (let i = 0; i < mapData.length; i++) {
         await this.create(mapData[i], {
           id: 0,
-          profilePicUrl: '',
-          name: '',
-          nameTH: '',
-          nickname: '',
-          company: '',
-          department: '',
-          division: '',
-          ipPhone: '',
-          email: '',
-          position: '',
-          staffId: '',
-          status: '',
-          birthDate: undefined,
-          hash: '',
-          createdBy: 0,
-          createdDate: undefined,
-          updatedDate: undefined,
+          username: 'host',
         });
       }
     } catch (e) {

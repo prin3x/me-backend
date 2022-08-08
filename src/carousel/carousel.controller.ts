@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { Roles } from 'auth/roles.decorator';
 import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
@@ -32,12 +33,16 @@ export class CarouselController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  create(@UploadedFile() image: Express.Multer.File, @Body() createPostDto) {
+  create(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createPostDto,
+    @AuthPayload() authPayload: IAuthPayload,
+  ) {
     const set: CreateCarouselDto = {
       ...createPostDto,
       image,
     };
-    return this.carouselService.create(set);
+    return this.carouselService.create(set, authPayload);
   }
 
   @Roles([ADMIN_ROLES.USER, ADMIN_ROLES.ADMIN])

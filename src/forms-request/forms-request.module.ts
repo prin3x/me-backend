@@ -16,8 +16,9 @@ import { v4 as uuid } from 'uuid';
     MulterModule.registerAsync({
       useFactory: () => ({
         fileFilter: (req: any, file: any, cb: any) => {
-          if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+          if (file.mimetype.match('text.*|image.*|application.*')) {
             // Allow storage of file
+            console.log(file);
             cb(null, true);
           } else {
             // Reject file
@@ -31,7 +32,7 @@ import { v4 as uuid } from 'uuid';
           }
         },
         limits: {
-          fileSize: +4 * 1024 * 1024,
+          fileSize: +10 * 1024 * 1024,
         },
         storage: diskStorage({
           destination: './upload/formrequest',

@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -25,4 +26,8 @@ export class User {
 
   @UpdateDateColumn()
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  @Exclude()
+  refreshToken?: string;
 }

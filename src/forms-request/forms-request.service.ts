@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { FormsRequestCategory } from 'forms-request-categories/entities/forms-request-category.entity';
@@ -20,6 +21,7 @@ export class FormsRequestService {
   constructor(
     @InjectRepository(FormsRequest)
     private repo: Repository<FormsRequest>,
+    private config: ConfigService,
     private formsRequestCategoriesService: FormsRequestCategoriesService,
   ) {}
 
@@ -108,10 +110,14 @@ export class FormsRequestService {
       serviceContact = await this.repo.findOne({ where: { id: +id } });
       if (!serviceContact) throw new NotFoundException();
 
-      serviceContact = { ...serviceContact, ...categoryDto };
-      serviceContact.filePath = categoryDto.file
-        ? `/upload/formrequest/${categoryDto.file.filename}`
-        : '';
+      serviceContact = Object.assign(serviceContact, categoryDto);
+
+      if (categoryDto.file) {
+        serviceContact.filePath =
+          this.config.get('apiURL') +
+          categoryDto.file.path.replace('upload', '');
+      }
+      console.log(serviceContact.filePath);
 
       await this.repo.save(serviceContact);
     } catch (e) {

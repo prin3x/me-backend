@@ -1,0 +1,4 @@
+apps:
+  - name: 'me-backend'
+    script: './dist/main.js'
+    autorestart : true

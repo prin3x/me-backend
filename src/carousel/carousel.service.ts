@@ -17,23 +17,33 @@ import {
   ListBasicOperationCarousel,
   ListQueryParamsCarouselDTO,
 } from './dto/get-carousel.dto';
+import { ConfigService } from '@nestjs/config';
+import { IAuthPayload } from 'auth/auth.decorator';
 
 @Injectable()
 export class CarouselService {
   constructor(
     @InjectRepository(Carousel)
     private repo: Repository<Carousel>,
+    private config: ConfigService,
   ) {}
 
-  async create(createCarouselDto: CreateCarouselDto) {
+  async create(
+    createCarouselDto: CreateCarouselDto,
+    authPayload: IAuthPayload,
+  ) {
     let res;
 
     const newsInsance = new Carousel();
     newsInsance.title = createCarouselDto.title;
     newsInsance.linkOut = createCarouselDto.linkOut;
     // mock
-    newsInsance.adminId = 1;
-    newsInsance.imageUrl = createCarouselDto.image.filename;
+    newsInsance.adminId = authPayload.id;
+
+    if (createCarouselDto.image) {
+      newsInsance.imageUrl =
+        this.config.get('apiURL') + createCarouselDto.image;
+    }
 
     try {
       res = await this.repo.save(newsInsance);
@@ -176,7 +186,20 @@ export class CarouselService {
     carousel.status = updateCarouselDto.status;
 
     try {
-      res = await this.repo.save(carousel);
+      const carouselTarget = await this.findOne(id);
+
+      if (!carouselTarget) throw new NotFoundException('No carousel id found');
+
+      const newStaffInformation = Object.assign(
+        carouselTarget,
+        updateCarouselDto,
+      );
+
+      if (updateCarouselDto.image) {
+        newStaffInformation.imageUrl =
+          this.config.get('apiURL') + updateCarouselDto.image;
+      }
+      res = await this.repo.save(newStaffInformation);
     } catch (e) {
       throw Error(e);
     }

@@ -84,11 +84,17 @@ export class StaffContactsController {
   @Roles(['admin'])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/:id')
+  @UseInterceptors(FileInterceptor('image'))
   update(
+    @UploadedFile() image: Express.Multer.File,
     @Param('id') id: string,
     @Body() updateStaffContactDto: UpdateStaffContactDto,
   ) {
-    return this.staffContactsService.update(+id, updateStaffContactDto);
+    const set: UpdateStaffContactDto = {
+      ...updateStaffContactDto,
+      image,
+    };
+    return this.staffContactsService.update(+id, set);
   }
 
   @Roles(['admin'])

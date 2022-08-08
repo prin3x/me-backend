@@ -26,7 +26,6 @@ export class AdminsController {
 
   @Get()
   findAll(@Query() q: ListQueryParamsDTO) {
-    console.log(q, 'qopwjepqwe');
     const query = normalParseQueryString(q);
     return this.adminsService.findAll(query);
   }

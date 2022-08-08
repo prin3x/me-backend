@@ -17,6 +17,7 @@ import { Room, ROOM_STATUS } from './entities/room.entity';
 import * as path from 'path';
 import { RTN_MODEL } from 'utils/rtn.model';
 import { IAuthPayload } from 'auth/auth.decorator';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RoomsService {
@@ -24,6 +25,7 @@ export class RoomsService {
   constructor(
     @InjectRepository(Room)
     private repo: Repository<Room>,
+    private config: ConfigService,
   ) {}
 
   async updateStatus(_id: number, _updateRoomDto: UpdateRoomStatusDto) {
@@ -98,7 +100,9 @@ export class RoomsService {
     newRoom.name = createRoomDto.name;
     newRoom.floor = createRoomDto.floor;
     newRoom.description = createRoomDto.description;
-    newRoom.imageUrl = `${createRoomDto.image.path}`.replace('upload', '');
+    newRoom.imageUrl =
+      this.config.get('apiURL') +
+      `${createRoomDto.image.path}`.replace('upload', '');
     newRoom.createdBy = admin.id;
 
     try {
@@ -225,7 +229,9 @@ export class RoomsService {
       newRoom.description = updateRoomDto.description;
 
       if (updateRoomDto.image) {
-        newRoom.imageUrl = `${updateRoomDto.image.path}`.replace('upload', '');
+        newRoom.imageUrl =
+          this.config.get('apiURL') +
+          `${updateRoomDto.image.path}`.replace('upload', '');
       }
 
       await this.repo.save(newRoom);

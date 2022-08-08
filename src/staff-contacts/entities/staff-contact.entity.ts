@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 import {
   Column,
@@ -79,4 +80,8 @@ export class StaffContact {
     (_meetingEvent) => _meetingEvent.staffContactDetail,
   )
   meetingEvent: MeetingEvent[];
+
+  @Column({ nullable: true })
+  @Exclude()
+  refreshToken?: string;
 }

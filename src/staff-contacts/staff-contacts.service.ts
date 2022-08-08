@@ -1,7 +1,10 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -81,19 +84,19 @@ export class StaffContactsService {
     staffInstance.section = createStaffContactDto.section;
     staffInstance.position = createStaffContactDto.position;
     staffInstance.hash = await bcrypt.hash('123456', 3);
+    staffInstance.profilePicUrl = '';
 
     // mock
     staffInstance.createdBy = auth.id;
 
+    if (createStaffContactDto.profilePicUrl) {
+      staffInstance.profilePicUrl = createStaffContactDto.profilePicUrl;
+    } else if (createStaffContactDto.image) {
+      staffInstance.profilePicUrl =
+        this.config.get('apiURL') +
+        `${createStaffContactDto.image.path}`.replace('upload', '');
+    }
     try {
-      if (createStaffContactDto.profilePicUrl) {
-        staffInstance.profilePicUrl = createStaffContactDto.profilePicUrl;
-      } else if (createStaffContactDto.image) {
-        staffInstance.profilePicUrl = '';
-      } else {
-        staffInstance.profilePicUrl = '';
-      }
-
       res = await this.repo.save(staffInstance);
     } catch (e) {
       this.logger
@@ -194,6 +197,36 @@ export class StaffContactsService {
     return rtn;
   }
 
+  async findAllBirthdayWithoutMonth(opt: ListBasicOperationContact) {
+    this.logger.log(`Fn: ${this.findAllBirthday.name}`);
+    let res;
+
+    const department = opt.department || '';
+    try {
+      res = await this.repo
+        .createQueryBuilder('StaffContact')
+        .andWhere('StaffContact.department LIKE :department', {
+          department: `%${department}%`,
+        })
+        .skip(opt.skip)
+        .take(opt.limit)
+        .orderBy('StaffContact.birthDate', 'ASC')
+        .getManyAndCount();
+    } catch (e) {
+      this.logger.error(`Fn: ${this.findAllBirthday.name}`);
+      throw new BadRequestException(e);
+    }
+
+    const rtn = {
+      items: res?.[0],
+      itemCount: res?.[0]?.length,
+      total: res?.[1],
+      page: opt.page || 1,
+    };
+
+    return rtn;
+  }
+
   async findOne(id: string) {
     return await this.repo.findOne({ where: { id: +id } });
   }
@@ -224,17 +257,25 @@ export class StaffContactsService {
     this.logger.log(`Fn: ${this.update.name}`);
     let res;
 
-    const staffContactInstance = new StaffContact();
-    staffContactInstance.id = id;
-    staffContactInstance.email = updateStaffContactDto.email;
-    staffContactInstance.company = updateStaffContactDto.company;
-    staffContactInstance.department = updateStaffContactDto.department;
-    staffContactInstance.ipPhone = updateStaffContactDto.ipPhone;
-    staffContactInstance.name = updateStaffContactDto.name;
-    staffContactInstance.nickname = updateStaffContactDto.nickname;
-
     try {
-      res = await this.repo.save(staffContactInstance);
+      const staffTarget = await this.findOne(`${id}`);
+
+      if (!staffTarget) throw new NotFoundException('No staff id found');
+
+      const newStaffInformation = Object.assign(
+        staffTarget,
+        updateStaffContactDto,
+      );
+
+      if (updateStaffContactDto.profilePicUrl) {
+        newStaffInformation.profilePicUrl = updateStaffContactDto.profilePicUrl;
+      } else if (updateStaffContactDto.image) {
+        newStaffInformation.profilePicUrl =
+          this.config.get('apiURL') +
+          `${updateStaffContactDto.image.path}`.replace('upload', '');
+      }
+
+      res = await this.repo.save(newStaffInformation);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}`);
       throw Error(e);
@@ -299,5 +340,31 @@ export class StaffContactsService {
     rtn.skip = (rtn.page - 1) * rtn.limit;
 
     return rtn;
+  }
+
+  async setCurrentRefreshToken(refreshToken: string, userId: number) {
+    const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    return await this.repo.update(userId, {
+      refreshToken: currentHashedRefreshToken,
+    });
+  }
+
+  async removeRefreshToken(email: string) {
+    const user = await this.findOneByEmail(email);
+
+    if (!user) {
+      throw new HttpException(
+        'User with this id does not exist',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return this.repo.update(
+      { email },
+      {
+        refreshToken: null,
+      },
+    );
   }
 }

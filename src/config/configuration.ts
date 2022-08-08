@@ -19,5 +19,9 @@ export default () => ({
     jwtSecret: process.env.JWT_SECRET,
     saltRound: process.env.BCRYPT_SALT,
   },
+  refreshToken: {
+    jwtSecret: process.env.REFRESH_SECRET,
+  },
   botApiKey: process.env.BOT_API_KEY,
+  apiURL: process.env.API_URL + ':' + process.env.PORT,
 });

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { nanoid } from 'nanoid';
@@ -23,6 +24,7 @@ export class PostsService {
   constructor(
     @InjectRepository(Post)
     private repo: Repository<Post>,
+    private config: ConfigService,
   ) {}
   async create(createPostDto: CreatePostDto, authPayload: IAuthPayload) {
     let res;
@@ -38,9 +40,11 @@ export class PostsService {
     newsInsance.imageUrl = createPostDto.image?.path.replace('upload', '');
     newsInsance.homeImageUrl =
       createPostDto.isSameImage === 'true'
-        ? createPostDto.image?.path.replace('upload', '') ||
-          newsInsance?.imageUrl.replace('upload', '')
-        : createPostDto.homeImage?.path.replace('upload', '');
+        ? this.config.get('apiURL') +
+          (createPostDto.image?.path.replace('upload', '') ||
+            newsInsance?.imageUrl.replace('upload', ''))
+        : this.config.get('apiURL') +
+          createPostDto.homeImage?.path.replace('upload', '');
 
     try {
       res = await this.repo.save(newsInsance);
@@ -184,9 +188,11 @@ export class PostsService {
     newsInsance.imageUrl = updatePostDto.image?.path.replace('upload', '');
     newsInsance.homeImageUrl =
       updatePostDto.isSameImage === 'true'
-        ? updatePostDto.image?.path.replace('upload', '') ||
-          newsInsance?.imageUrl.replace('upload', '')
-        : updatePostDto.homeImage?.path.replace('upload', '');
+        ? this.config.get('apiURL') +
+          (updatePostDto.image?.path.replace('upload', '') ||
+            newsInsance?.imageUrl.replace('upload', ''))
+        : this.config.get('apiURL') +
+          updatePostDto.homeImage?.path.replace('upload', '');
     newsInsance.homeImageUrl =
       updatePostDto?.homeImage?.filename || newsInsance?.homeImageUrl;
     newsInsance.adminId = authPayload.id;

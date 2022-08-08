@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
+  Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { StaffContact } from 'staff-contacts/entities/staff-contact.entity';
 import { AuthPayload } from './auth.decorator';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth-guard';
@@ -29,11 +32,24 @@ export class AuthController {
     return this.authService.loginUser(user);
   }
 
+  @Get('log-out')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async logOut(user: StaffContact) {
+    await this.authService.removeRefreshToken(user.email);
+  }
+
   @Get('/checkauth')
   @UseGuards(JwtAuthGuard)
   checkAuthUser(@AuthPayload() user) {
     if (!user) throw new UnauthorizedException();
     return user;
+  }
+
+  @Post('/checktoken')
+  @UseGuards(JwtAuthGuard)
+  checkToken(@Body('token') token: string) {
+    return this.authService.checkAuthAndProlongToken(token);
   }
 
   @Post('/change-password')
