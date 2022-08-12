@@ -100,7 +100,7 @@ export class RoomsService {
     newRoom.floor = createRoomDto.floor;
     newRoom.description = createRoomDto.description;
     newRoom.imageUrl =
-      this.config.get('apiURL') +
+      this.config.get('apiAssetURL') +
       `${createRoomDto.image.path}`.replace('upload', '');
     newRoom.createdBy = admin.id;
 
@@ -208,7 +208,7 @@ export class RoomsService {
 
       if (updateRoomDto.image) {
         newRoom.imageUrl =
-          this.config.get('apiURL') +
+          this.config.get('apiAssetURL') +
           `${updateRoomDto.image.path}`.replace('upload', '');
       }
 

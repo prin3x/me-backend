@@ -93,7 +93,7 @@ export class StaffContactsService {
       staffInstance.profilePicUrl = createStaffContactDto.profilePicUrl;
     } else if (createStaffContactDto.image) {
       staffInstance.profilePicUrl =
-        this.config.get('apiURL') +
+        this.config.get('apiAssetURL') +
         `${createStaffContactDto.image.path}`.replace('upload', '');
     }
     try {
@@ -271,7 +271,7 @@ export class StaffContactsService {
         newStaffInformation.profilePicUrl = updateStaffContactDto.profilePicUrl;
       } else if (updateStaffContactDto.image) {
         newStaffInformation.profilePicUrl =
-          this.config.get('apiURL') +
+          this.config.get('apiAssetURL') +
           `${updateStaffContactDto.image.path}`.replace('upload', '');
       }
 

@@ -38,17 +38,17 @@ export class PostsService {
 
     if (createPostDto.image) {
       newsInsance.imageUrl =
-        this.config.get('apiURL') +
+        this.config.get('apiAssetURL') +
         createPostDto.image?.path.replace('upload', '');
     }
 
     if (createPostDto.homeImage) {
       newsInsance.homeImageUrl =
         createPostDto.isSameImage === 'true'
-          ? this.config.get('apiURL') +
+          ? this.config.get('apiAssetURL') +
               createPostDto?.image?.path.replace('upload', '') ||
             newsInsance?.imageUrl?.replace('upload', '')
-          : this.config.get('apiURL') +
+          : this.config.get('apiAssetURL') +
             createPostDto?.homeImage?.path.replace('upload', '');
     }
 
@@ -171,17 +171,17 @@ export class PostsService {
 
     if (updatePostDto.image) {
       newsInsance.imageUrl =
-        this.config.get('apiURL') +
+        this.config.get('apiAssetURL') +
         updatePostDto.image?.path.replace('upload', '');
     }
 
     if (updatePostDto.homeImage) {
       newsInsance.homeImageUrl =
         updatePostDto.isSameImage === 'true'
-          ? this.config.get('apiURL') +
+          ? this.config.get('apiAssetURL') +
               updatePostDto?.image?.path.replace('upload', '') ||
             newsInsance?.imageUrl?.replace('upload', '')
-          : this.config.get('apiURL') +
+          : this.config.get('apiAssetURL') +
             updatePostDto?.homeImage?.path.replace('upload', '');
     }
 

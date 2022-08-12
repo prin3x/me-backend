@@ -41,7 +41,7 @@ export class CarouselService {
 
     if (createCarouselDto.image) {
       newsInsance.imageUrl =
-        this.config.get('apiURL') + createCarouselDto.image;
+        this.config.get('apiAssetURL') + createCarouselDto.image;
     }
 
     try {
@@ -176,7 +176,7 @@ export class CarouselService {
 
       if (updateCarouselDto.image) {
         newStaffInformation.imageUrl =
-          this.config.get('apiURL') + updateCarouselDto.image;
+          this.config.get('apiAssetURL') + updateCarouselDto.image;
       }
       res = await this.repo.save(newStaffInformation);
     } catch (e) {
