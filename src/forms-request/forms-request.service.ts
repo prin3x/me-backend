@@ -113,9 +113,7 @@ export class FormsRequestService {
       serviceContact = Object.assign(serviceContact, categoryDto);
 
       if (categoryDto.file) {
-        serviceContact.filePath =
-          this.config.get('apiURL') +
-          categoryDto.file.path.replace('upload', '');
+        serviceContact.filePath = categoryDto.file.path.replace('upload', '');
       }
       console.log(serviceContact.filePath);
 

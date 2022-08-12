@@ -7,9 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { nanoid } from 'nanoid';
-import * as path from 'path';
 import { Repository } from 'typeorm';
-import { base64Encode } from 'utils/fileUtils';
 import { CreatePostDto } from './dto/create-post.dto';
 import {
   ListBasicOperationPost,
@@ -37,14 +35,22 @@ export class PostsService {
     newsInsance.tag = createPostDto.tag;
     newsInsance.adminId = authPayload.id;
     newsInsance.slug = `${nanoid(12)}`;
-    newsInsance.imageUrl = createPostDto.image?.path.replace('upload', '');
-    newsInsance.homeImageUrl =
-      createPostDto.isSameImage === 'true'
-        ? this.config.get('apiURL') +
-          (createPostDto.image?.path.replace('upload', '') ||
-            newsInsance?.imageUrl.replace('upload', ''))
-        : this.config.get('apiURL') +
-          createPostDto.homeImage?.path.replace('upload', '');
+
+    if (createPostDto.image) {
+      newsInsance.imageUrl =
+        this.config.get('apiURL') +
+        createPostDto.image?.path.replace('upload', '');
+    }
+
+    if (createPostDto.homeImage) {
+      newsInsance.homeImageUrl =
+        createPostDto.isSameImage === 'true'
+          ? this.config.get('apiURL') +
+              createPostDto?.image?.path.replace('upload', '') ||
+            newsInsance?.imageUrl?.replace('upload', '')
+          : this.config.get('apiURL') +
+            createPostDto?.homeImage?.path.replace('upload', '');
+    }
 
     try {
       res = await this.repo.save(newsInsance);
@@ -89,18 +95,6 @@ export class PostsService {
       page: opt.page,
     };
 
-    rtn.items = rtn.items.map((_item: Post) => {
-      const imageBase64 =
-        _item?.imageUrl && base64Encode(path.join('./upload', _item.imageUrl));
-      const homeImageBase64 =
-        _item?.homeImageUrl &&
-        base64Encode(path.join('./upload', _item.homeImageUrl));
-      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
-      _item.homeImageUrl = `data:image/png;base64, ${homeImageBase64}`;
-
-      return _item;
-    });
-
     return rtn;
   }
 
@@ -135,13 +129,6 @@ export class PostsService {
       page: opt.page,
     };
 
-    rtn.items = rtn.items.map((_item: Post) => {
-      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
-      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
-
-      return _item;
-    });
-
     return rtn;
   }
 
@@ -156,13 +143,6 @@ export class PostsService {
     } catch (error) {
       throw new NotFoundException('Slug Not Found');
     }
-
-    const imageBase64 = base64Encode(path.join('./upload', res.imageUrl));
-    const homeImageBase64 = base64Encode(
-      path.join('./upload', res.homeImageUrl),
-    );
-    res.imageUrl = `data:image/png;base64, ${imageBase64}`;
-    res.homeImageUrl = `data:image/png;base64, ${homeImageBase64}`;
 
     return res;
   }
@@ -185,20 +165,24 @@ export class PostsService {
     newsInsance.postBy = updatePostDto.postBy;
     newsInsance.description = updatePostDto.description;
     newsInsance.tag = updatePostDto.tag;
-    newsInsance.imageUrl = updatePostDto.image?.path.replace('upload', '');
-    newsInsance.homeImageUrl =
-      updatePostDto.isSameImage === 'true'
-        ? this.config.get('apiURL') +
-          (updatePostDto.image?.path.replace('upload', '') ||
-            newsInsance?.imageUrl.replace('upload', ''))
-        : this.config.get('apiURL') +
-          updatePostDto.homeImage?.path.replace('upload', '');
-    newsInsance.homeImageUrl =
-      updatePostDto?.homeImage?.filename || newsInsance?.homeImageUrl;
+
     newsInsance.adminId = authPayload.id;
     newsInsance.slug = `${nanoid(12)}`;
+
     if (updatePostDto.image) {
-      newsInsance.imageUrl = `${updatePostDto.image.filename}`;
+      newsInsance.imageUrl =
+        this.config.get('apiURL') +
+        updatePostDto.image?.path.replace('upload', '');
+    }
+
+    if (updatePostDto.homeImage) {
+      newsInsance.homeImageUrl =
+        updatePostDto.isSameImage === 'true'
+          ? this.config.get('apiURL') +
+              updatePostDto?.image?.path.replace('upload', '') ||
+            newsInsance?.imageUrl?.replace('upload', '')
+          : this.config.get('apiURL') +
+            updatePostDto?.homeImage?.path.replace('upload', '');
     }
 
     try {

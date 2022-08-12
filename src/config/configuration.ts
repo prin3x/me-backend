@@ -23,5 +23,5 @@ export default () => ({
     jwtSecret: process.env.REFRESH_SECRET,
   },
   botApiKey: process.env.BOT_API_KEY,
-  apiURL: process.env.API_URL + ':' + process.env.PORT,
+  apiURL: process.env.API_URL,
 });

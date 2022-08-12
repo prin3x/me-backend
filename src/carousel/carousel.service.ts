@@ -9,7 +9,6 @@ import { CreateCarouselDto } from './dto/create-carousel.dto';
 import { UpdateCarouselDto } from './dto/update-carousel.dto';
 import { Carousel, CAROUSEL_STATUS } from './entities/carousel.entity';
 import * as path from 'path';
-import { base64Encode } from 'utils/fileUtils';
 import { UpdateCarouselStatusDto } from './dto/update-status-carousel.dto';
 import { ListBasicOperation } from 'utils/query.dto';
 import { RTN_MODEL } from 'utils/rtn.model';
@@ -57,18 +56,10 @@ export class CarouselService {
   async findAll(): Promise<Carousel[]> {
     let carouselList: Carousel[];
     try {
-      const rawCarouselList = await this.repo.find({
+      carouselList = await this.repo.find({
         where: {
           status: CAROUSEL_STATUS.ENABLED,
         },
-      });
-      carouselList = rawCarouselList.map((_carouselInfo: Carousel) => {
-        const imageBase64 = base64Encode(
-          path.join('./upload', _carouselInfo.imageUrl),
-        );
-        _carouselInfo.imageUrl = `data:image/png;base64, ${imageBase64}`;
-
-        return _carouselInfo;
       });
     } catch (e) {
       console.error(e);
@@ -99,13 +90,6 @@ export class CarouselService {
       page: opt.page,
     };
 
-    rtn.items = rtn.items.map((_item: Carousel) => {
-      const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
-      _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
-
-      return _item;
-    });
-
     return rtn;
   }
 
@@ -119,11 +103,6 @@ export class CarouselService {
       res = await this.repo.findOne({ where: { id } });
     } catch (error) {
       throw new NotFoundException('Id Not Found');
-    }
-
-    if (res.imageUrl) {
-      const imageBase64 = base64Encode(path.join('./upload', res.imageUrl));
-      res.imageUrl = `data:image/png;base64, ${imageBase64}`;
     }
 
     return res;

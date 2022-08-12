@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { base64Encode } from 'utils/fileUtils';
 import { CreateRoomDto } from './dto/create-room.dto';
 import {
   ListBasicOperationRoom,
@@ -140,14 +139,6 @@ export class RoomsService {
       page: opt.page,
     };
 
-    rtn.items = rtn.items.map((_item: Room) => {
-      if (_item.imageUrl) {
-        const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
-        _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
-      }
-      return _item;
-    });
-
     return rtn;
   }
 
@@ -177,14 +168,6 @@ export class RoomsService {
       page: opt.page,
     };
 
-    rtn.items = rtn.items.map((_item: Room) => {
-      if (_item.imageUrl) {
-        const imageBase64 = base64Encode(path.join('./upload', _item.imageUrl));
-        _item.imageUrl = `data:image/png;base64, ${imageBase64}`;
-      }
-      return _item;
-    });
-
     return rtn.items;
   }
 
@@ -205,11 +188,6 @@ export class RoomsService {
     } catch (error) {
       this.logger.error(`Fn: ${this.findOneById.name}, Params: ${id}`);
       throw new NotFoundException('Id Not Found');
-    }
-
-    if (res.imageUrl) {
-      const imageBase64 = base64Encode(path.join('./upload', res.imageUrl));
-      res.imageUrl = `data:image/png;base64, ${imageBase64}`;
     }
 
     return res;
