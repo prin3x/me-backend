@@ -22,6 +22,7 @@ import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('staff-contacts')
 export class StaffContactsController {
   constructor(private readonly staffContactsService: StaffContactsService) {}

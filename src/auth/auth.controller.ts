@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { StaffContact } from 'staff-contacts/entities/staff-contact.entity';
-import { AuthPayload } from './auth.decorator';
+import { AuthPayload, IAuthPayload } from './auth.decorator';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth-guard';
 
@@ -41,14 +41,14 @@ export class AuthController {
 
   @Get('/checkauth')
   @UseGuards(JwtAuthGuard)
-  checkAuthUser(@AuthPayload() user) {
-    if (!user) throw new UnauthorizedException();
-    return user;
+  checkAuthUser(@AuthPayload() user: IAuthPayload) {
+    if (!user) throw new UnauthorizedException('No required information');
+    return this.authService.checkExpiry(user);
   }
 
   @Post('/checktoken')
   @UseGuards(JwtAuthGuard)
-  checkToken(@Body('token') token: string) {
+  checkToken(@AuthPayload() token: string) {
     return this.authService.checkAuthAndProlongToken(token);
   }
 

@@ -245,10 +245,10 @@ export class PostsService {
     return await this.repo.delete(id);
   }
 
-  async incrementReders(id: number) {
+  async incrementReders(slug: string) {
     let res;
 
-    const newsInsance = await this.repo.findOne({ where: { id } });
+    const newsInsance = await this.findOneBySlug(slug);
     newsInsance.readers += 1;
 
     try {

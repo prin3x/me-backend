@@ -16,8 +16,9 @@ import { UpdateFormsRequestDto } from './dto/update-forms-request.dto';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from 'auth/roles.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('forms-request')
 export class FormsRequestController {
   constructor(private readonly formsRequestService: FormsRequestService) {}

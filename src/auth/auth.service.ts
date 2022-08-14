@@ -12,7 +12,6 @@ import { UsersService } from 'users/users.service';
 import * as bcrypt from 'bcrypt';
 import { IAuthPayload } from './auth.decorator';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'users/entities/user.entity';
 import { StaffContact } from 'staff-contacts/entities/staff-contact.entity';
 
 @Injectable()
@@ -101,6 +100,20 @@ export class AuthService {
     };
   }
 
+  async checkExpiry(user: IAuthPayload) {
+    try {
+      const pastFifteenMin = user.iat * 1000 + 1000 * 60 * 15;
+      if (pastFifteenMin < new Date().getTime()) {
+        throw new UnauthorizedException('Reach time limit please login again');
+      }
+
+      return {
+        accessToken: this.jwtService.sign({ ...user }),
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Reach time limit please login again');
+    }
+  }
   async checkAuthAndProlongToken(token: string) {
     try {
       const decoded = this.jwtService.decode(token) as IAuthPayload;

@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { PostCategoriesService } from './post-categories.service';
 import { CreatePostCategoryDto } from './dto/create-post-category.dto';
 import { UpdatePostCategoryDto } from './dto/update-post-category.dto';
+import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('post-categories')
 export class PostCategoriesController {
   constructor(private readonly postCategoriesService: PostCategoriesService) {}

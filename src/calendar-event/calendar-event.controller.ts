@@ -20,6 +20,7 @@ import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { ListQueryCalendarByCategoryDTO } from './dto/find-event.dto';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('calendar-event')
 export class CalendarEventController {
   constructor(private readonly calendarEventService: CalendarEventService) {}

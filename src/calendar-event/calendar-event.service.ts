@@ -290,6 +290,7 @@ export class CalendarEventService {
         await this.create(mapData[i], {
           id: 0,
           username: 'host',
+          role: 'host',
         });
       }
     } catch (e) {

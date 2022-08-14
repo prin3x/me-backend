@@ -54,9 +54,9 @@ export class PostsController {
     return this.postsService.create(set, authPayload);
   }
 
-  @Post('/read/:id')
-  incrementReders(@Query('id') id: number) {
-    return this.postsService.incrementReders(id);
+  @Post('/read/:slug')
+  incrementReders(@Query('slug') slug: string) {
+    return this.postsService.incrementReders(slug);
   }
 
   @Get('/all')

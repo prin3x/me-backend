@@ -10,11 +10,12 @@ import {
 } from '@nestjs/common';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ServiceContactCategoryService } from './service-contact-categories.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('service-contact-category')
 export class ServiceContactCategoryController {
   constructor(

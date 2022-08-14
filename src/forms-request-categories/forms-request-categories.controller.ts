@@ -13,7 +13,9 @@ import { CreateFormsRequestCategoryDto } from './dto/create-forms-request-catego
 import { UpdateFormsRequestCategoryDto } from './dto/update-forms-request-category.dto';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { JwtAuthGuard } from 'auth/jwt-auth-guard';
+import { RolesGuard } from 'auth/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @UseGuards(JwtAuthGuard)
 @Controller('forms-request-category')
 export class FormsRequestCategoriesController {

@@ -15,6 +15,7 @@ import { CalendarEventCategoryService } from './calendar-event-category.service'
 import { CreateCalendarEventCategoryDto } from './dto/create-calendar-event-category.dto';
 import { UpdateCalendarEventCategoryDto } from './dto/update-calendar-event-category.dto';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('calendar-event-category')
 export class CalendarEventCategoryController {
   constructor(

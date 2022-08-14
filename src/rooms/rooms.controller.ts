@@ -24,6 +24,7 @@ import { JwtAuthGuard } from 'auth/jwt-auth-guard';
 import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}

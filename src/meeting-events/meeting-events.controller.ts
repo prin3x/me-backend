@@ -19,6 +19,7 @@ import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('meeting-events')
 export class MeetingEventsController {
   constructor(private readonly meetingEventsService: MeetingEventsService) {}
