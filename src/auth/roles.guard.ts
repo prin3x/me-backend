@@ -5,6 +5,7 @@ export enum ADMIN_ROLES {
   USER = 'user',
   ADMIN = 'admin',
   SUPER_ADMIN = 'superAdmin',
+  HOST = 'host',
 }
 
 @Injectable()
@@ -34,6 +35,9 @@ export class RolesGuard implements CanActivate {
       if (i === ADMIN_ROLES.SUPER_ADMIN) {
         result = user.role === ADMIN_ROLES.SUPER_ADMIN;
       }
+    }
+    if (user.role === ADMIN_ROLES.HOST) {
+      result = true;
     }
     return result;
   }
