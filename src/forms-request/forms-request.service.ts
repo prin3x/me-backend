@@ -62,9 +62,12 @@ export class FormsRequestService {
       form.downloadLink = createForms.downloadLink;
       form.categoryId = createForms.categoryId;
       form.index = createForms.index;
-      form.filePath = createForms.file
-        ? `/upload/formrequest/${createForms.file.filename}`
-        : '';
+
+      if (createForms.file) {
+        form.filePath =
+          this.config.get('apiAssetURL') +
+          createForms?.file?.path.replace('upload', '');
+      }
       await this.repo.save({ ...createForms, adminId: admin.id });
     } catch (e) {
       this.logger.error(e);
@@ -113,9 +116,10 @@ export class FormsRequestService {
       serviceContact = Object.assign(serviceContact, categoryDto);
 
       if (categoryDto.file) {
-        serviceContact.filePath = categoryDto.file.path.replace('upload', '');
+        serviceContact.filePath =
+          this.config.get('apiAssetURL') +
+          categoryDto?.file?.path.replace('upload', '');
       }
-      console.log(serviceContact.filePath);
 
       await this.repo.save(serviceContact);
     } catch (e) {

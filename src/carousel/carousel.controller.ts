@@ -71,10 +71,13 @@ export class CarouselController {
   @Roles(['admin'])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('image'))
   update(
+    @UploadedFile() image: Express.Multer.File,
     @Param('id') id: string,
     @Body() updateCarouselDto: UpdateCarouselDto,
   ) {
+    updateCarouselDto.image = image;
     return this.carouselService.update(+id, updateCarouselDto);
   }
 

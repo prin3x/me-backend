@@ -41,7 +41,8 @@ export class CarouselService {
 
     if (createCarouselDto.image) {
       newsInsance.imageUrl =
-        this.config.get('apiAssetURL') + createCarouselDto.image;
+        this.config.get('apiAssetURL') +
+        createCarouselDto?.image?.path.replace('upload', '');
     }
 
     try {
@@ -176,8 +177,10 @@ export class CarouselService {
 
       if (updateCarouselDto.image) {
         newStaffInformation.imageUrl =
-          this.config.get('apiAssetURL') + updateCarouselDto.image;
+          this.config.get('apiAssetURL') +
+          updateCarouselDto?.image?.path.replace('upload', '');
       }
+
       res = await this.repo.save(newStaffInformation);
     } catch (e) {
       throw Error(e);
