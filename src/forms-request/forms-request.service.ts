@@ -89,10 +89,14 @@ export class FormsRequestService {
         where: { index: index, categoryId: formRequest.categoryId },
       });
 
-      swapContact.index = +formRequest.index;
-      formRequest.index = +index;
-
-      await this.repo.save([formRequest, swapContact]);
+      if (swapContact) {
+        swapContact.index = parseInt(formRequest.index);
+        formRequest.index = index;
+        await this.repo.save([formRequest, swapContact]);
+      } else {
+        formRequest.index = index;
+        await this.repo.save(formRequest);
+      }
     } catch (e) {
       this.logger.error(`Fn: ${this.updateIndex.name}, id: ${id}
       `);
