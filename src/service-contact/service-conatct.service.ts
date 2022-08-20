@@ -96,13 +96,17 @@ export class ServiceContactService {
         where: { index: index, categoryId: serviceContact.categoryId },
       });
 
-      swapContact.index = serviceContact.index;
-      serviceContact.index = index;
-
-      await this.repo.save([serviceContact, swapContact]);
+      if (swapContact) {
+        swapContact.index = parseInt(serviceContact.index);
+        serviceContact.index = index;
+        await this.repo.save([serviceContact, swapContact]);
+      } else {
+        serviceContact.index = index;
+        await this.repo.save(serviceContact);
+      }
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, id: ${id}
-      `);
+      ${e}`);
       throw new BadRequestException(e);
     }
 
