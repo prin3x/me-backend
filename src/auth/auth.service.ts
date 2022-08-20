@@ -108,7 +108,13 @@ export class AuthService {
       }
 
       return {
-        accessToken: this.jwtService.sign({ ...user }),
+        accessToken: this.jwtService.sign(
+          { ...user },
+          {
+            secret: this.config.get<string>('jwt.jwtSecret'),
+            expiresIn: 10 * 60 + 's',
+          },
+        ),
       };
     } catch (error) {
       throw new UnauthorizedException('Reach time limit please login again');

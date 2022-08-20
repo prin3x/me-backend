@@ -24,6 +24,7 @@ export class CreateMeetingEventDto {
   @IsNumber()
   roomId: number;
 
+  @IsOptional()
   @IsBoolean()
   allDay: boolean;
 
