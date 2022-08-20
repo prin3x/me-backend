@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsNumber,
   IsNumberString,
@@ -18,6 +19,7 @@ export class CreateFormsRequestDto {
   @IsOptional()
   file: any;
 
+  @Type(() => Number)
   @IsNumber()
   index: number;
 }

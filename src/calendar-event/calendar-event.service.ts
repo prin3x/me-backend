@@ -291,6 +291,7 @@ export class CalendarEventService {
           id: 0,
           username: 'host',
           role: 'host',
+          name: 'host',
         });
       }
     } catch (e) {

@@ -44,6 +44,9 @@ import { Division } from 'division/entities/division.entity';
 import { Tag } from 'tags/entities/tag.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { FloorModule } from './floor/floor.module';
+import { Floor } from 'floor/entities/floor.entity';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -86,6 +89,7 @@ import { join } from 'path';
           Department,
           Division,
           Tag,
+          Floor,
         ],
       }),
     }),
@@ -109,6 +113,8 @@ import { join } from 'path';
     DivisionModule,
     CompanyModule,
     TagsModule,
+    FloorModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

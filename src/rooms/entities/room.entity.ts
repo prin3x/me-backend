@@ -1,8 +1,11 @@
+import { Floor } from 'floor/entities/floor.entity';
 import { MeetingEvent } from 'meeting-events/entities/meeting-event.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,7 +17,7 @@ export enum ROOM_STATUS {
   NONE = 'none',
 }
 
-@Entity()
+@Entity('room')
 export class Room {
   @PrimaryGeneratedColumn()
   id: number;
@@ -48,4 +51,10 @@ export class Room {
 
   @OneToMany(() => MeetingEvent, (_room) => _room.roomId)
   meetingEventDetail: MeetingEvent[];
+
+  @ManyToOne(() => Floor, (floor) => floor.floor, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'floor' })
+  floorDetails: string;
 }

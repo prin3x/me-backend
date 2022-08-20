@@ -36,7 +36,6 @@ export class CarouselService {
     const newsInsance = new Carousel();
     newsInsance.title = createCarouselDto.title;
     newsInsance.linkOut = createCarouselDto.linkOut;
-    // mock
     newsInsance.adminId = authPayload.id;
 
     if (createCarouselDto.image) {
@@ -57,11 +56,12 @@ export class CarouselService {
   async findAll(): Promise<Carousel[]> {
     let carouselList: Carousel[];
     try {
-      carouselList = await this.repo.find({
-        where: {
-          status: CAROUSEL_STATUS.ENABLED,
-        },
+      const query = this.repo.createQueryBuilder('carousel');
+      query.where('(carousel.status LIKE :status)', {
+        status: CAROUSEL_STATUS.ENABLED,
       });
+      query.orderBy('updatedDate', 'DESC');
+      carouselList = await query.getMany();
     } catch (e) {
       console.error(e);
     }

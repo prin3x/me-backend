@@ -13,7 +13,6 @@ import {
 } from './dto/get-room.dto';
 import { UpdateRoomDto, UpdateRoomStatusDto } from './dto/update-room.dto';
 import { Room, ROOM_STATUS } from './entities/room.entity';
-import * as path from 'path';
 import { RTN_MODEL } from 'utils/rtn.model';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { ConfigService } from '@nestjs/config';
@@ -172,6 +171,7 @@ export class RoomsService {
   }
 
   async findByFloor(_floor: string): Promise<Room[]> {
+    if (_floor === '0') return await this.repo.find();
     return await this.repo.find({ where: { floor: _floor } });
   }
 

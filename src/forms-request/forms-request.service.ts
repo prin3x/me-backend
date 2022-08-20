@@ -68,7 +68,7 @@ export class FormsRequestService {
           this.config.get('apiAssetURL') +
           createForms?.file?.path.replace('upload', '');
       }
-      await this.repo.save({ ...createForms, adminId: admin.id });
+      await this.repo.save({ ...form, adminId: admin.id });
     } catch (e) {
       this.logger.error(e);
       throw new BadRequestException(e);
