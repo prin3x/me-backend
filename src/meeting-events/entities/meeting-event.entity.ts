@@ -56,5 +56,5 @@ export class MeetingEvent {
 
   @ManyToOne(() => Room, (_room) => _room.id)
   @JoinColumn({ name: 'roomId' })
-  calendarEventDetail: Room;
+  room: Room;
 }

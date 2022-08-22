@@ -146,14 +146,24 @@ export class MeetingEventsService {
   }
 
   async findOne(id: number) {
-    return await this.repo.findOne({ where: { id } });
+    return await this.repo.findOne({
+      where: { id },
+      relations: {
+        roomId: true,
+      },
+    });
   }
 
   async findOneAndOwner(id: number, user: IAuthPayload) {
     this.logger.log(`Fn: ${this.findOneAndOwner.name}`);
     let res, rtn;
     try {
-      res = await this.repo.findOne({ where: { id } });
+      res = await this.repo.findOne({
+        where: { id },
+        relations: {
+          room: true,
+        },
+      });
       rtn = {
         ...res,
         isOwner: res.createdBy === user.id,

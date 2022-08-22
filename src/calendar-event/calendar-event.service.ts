@@ -292,6 +292,7 @@ export class CalendarEventService {
           username: 'host',
           role: 'host',
           name: 'host',
+          profilePicUrl: '',
         });
       }
     } catch (e) {

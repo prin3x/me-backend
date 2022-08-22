@@ -6,6 +6,7 @@ export interface IAuthPayload {
   name: string;
   iat?: number;
   role: string;
+  profilePicUrl: string;
 }
 
 export const AuthPayload = createParamDecorator(

@@ -90,7 +90,12 @@ export class AuthService {
       );
 
       if (isValid) {
-        payload = { username: _user.email, id: _user.id, name: _user.name };
+        payload = {
+          username: _user.email,
+          id: _user.id,
+          name: _user.name,
+          profilePicUrl: _user.profilePicUrl,
+        };
       }
     } catch (e) {
       throw new UnauthorizedException('Unable to login user');

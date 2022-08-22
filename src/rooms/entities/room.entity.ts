@@ -49,7 +49,7 @@ export class Room {
   @Column({ default: ROOM_STATUS.ENABLED })
   status: ROOM_STATUS;
 
-  @OneToMany(() => MeetingEvent, (_room) => _room.roomId)
+  @OneToMany(() => MeetingEvent, (_room) => _room.room)
   meetingEventDetail: MeetingEvent[];
 
   @ManyToOne(() => Floor, (floor) => floor.floor, {
