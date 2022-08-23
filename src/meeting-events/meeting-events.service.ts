@@ -60,20 +60,13 @@ export class MeetingEventsService {
     newEvent.createdBy = auth.id;
 
     try {
-      const start = moment(createMeetingEventDto.start).format(
-        'yyyy-MM-DD HH:mm:ss',
-      );
-      const end = moment(createMeetingEventDto.end).format(
-        'yyyy-MM-DD HH:mm:ss',
-      );
       const allRoomThisDay = await this.findInterval(
-        start,
-        end,
+        createMeetingEventDto.start,
+        createMeetingEventDto.end,
         createMeetingEventDto.roomId,
       );
 
-      if (allRoomThisDay.length > 0)
-        throw new BadRequestException('Duplicated Booking');
+      if (allRoomThisDay) throw new BadRequestException('Duplicated Booking');
 
       await this.repo.save(newEvent);
     } catch (e) {
@@ -90,7 +83,9 @@ export class MeetingEventsService {
     start: string,
     end: string,
     roomId: number,
-  ): Promise<MeetingEvent[]> {
+  ): Promise<MeetingEvent> {
+    start = moment(start).subtract(7, 'h').format('yyyy-MM-DD HH:mm:ss');
+    end = moment(end).subtract(7, 'h').format('yyyy-MM-DD HH:mm:ss');
     const query = this.repo.createQueryBuilder('meeting');
     query.where('meeting.roomId = :roomId', {
       roomId,
@@ -111,7 +106,7 @@ export class MeetingEventsService {
         end: end,
       });
 
-    return await query.getMany();
+    return await query.getOne();
   }
 
   async findAll(opt: ListQueryMeetingDTO) {
@@ -181,23 +176,36 @@ export class MeetingEventsService {
     updateMeetingEventDto: UpdateMeetingEventDto,
     user: IAuthPayload,
   ) {
-    this.logger.log(`Fn: ${this.update.name}, Auth: ${user.id}`);
+    this.logger.log(
+      `Fn: ${this.update.name}, Auth: ${user.id}, booking id: ${id}`,
+    );
     let newEvent;
     try {
-      newEvent = await this.findOne(id);
-      if (!newEvent) throw new NotFoundException();
+      newEvent = await this.repo.findOne({
+        where: { id },
+      });
+      console.log(newEvent, 'newEvent');
+      if (!newEvent) throw new NotFoundException('Not found');
 
       newEvent.title = updateMeetingEventDto.title;
       newEvent.description = updateMeetingEventDto.description;
       newEvent.start = updateMeetingEventDto.start;
       newEvent.end = updateMeetingEventDto.end;
-      newEvent.roomId = updateMeetingEventDto.roomId;
+      newEvent.roomId = id;
       newEvent.createdBy = user.id;
+      const allRoomThisDay = await this.findInterval(
+        updateMeetingEventDto.start,
+        updateMeetingEventDto.end,
+        id,
+      );
+
+      if (allRoomThisDay && allRoomThisDay.createdBy !== user.id)
+        throw new BadRequestException('Duplicated Booking');
 
       await this.repo.save(newEvent);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Auth: ${user.id}`);
-      throw new BadRequestException();
+      throw new BadRequestException(`${e}`);
     }
 
     return newEvent;

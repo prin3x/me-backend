@@ -43,7 +43,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   checkAuthUser(@AuthPayload() user: IAuthPayload) {
     if (!user) throw new UnauthorizedException('No required information');
-    return this.authService.checkExpiry(user);
+    const res = this.authService.checkExpiry(user);
+    return res;
   }
 
   @Post('/checktoken')

@@ -70,7 +70,7 @@ export class MeetingEventsController {
     @Body() updateMeetingEventDto: UpdateMeetingEventDto,
     @AuthPayload() user: IAuthPayload,
   ) {
-    return this.meetingEventsService.update(+id, updateMeetingEventDto, user);
+    return this.meetingEventsService.update(id, updateMeetingEventDto, user);
   }
 
   @Roles([ADMIN_ROLES.USER])

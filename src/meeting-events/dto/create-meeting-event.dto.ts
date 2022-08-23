@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -21,6 +22,7 @@ export class CreateMeetingEventDto {
   @IsString()
   end: string;
 
+  @Type(() => Number)
   @IsNumber()
   roomId: number;
 

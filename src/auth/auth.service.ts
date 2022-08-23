@@ -107,10 +107,10 @@ export class AuthService {
 
   async checkExpiry(user: IAuthPayload) {
     try {
-      const pastFifteenMin = user.iat * 1000 + 1000 * 60 * 15;
-      if (pastFifteenMin < new Date().getTime()) {
-        throw new UnauthorizedException('Reach time limit please login again');
-      }
+      // const pastFifteenMin = user.iat * 1000 + 1000 * 60 * 15;
+      // if (pastFifteenMin < new Date().getTime()) {
+      //   throw new UnauthorizedException('Reach time limit please login again');
+      // }
 
       return {
         accessToken: this.jwtService.sign(
