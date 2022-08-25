@@ -49,7 +49,9 @@ export class Room {
   @Column({ default: ROOM_STATUS.ENABLED })
   status: ROOM_STATUS;
 
-  @OneToMany(() => MeetingEvent, (_room) => _room.room)
+  @OneToMany(() => MeetingEvent, (_room) => _room.room, {
+    onDelete: 'CASCADE',
+  })
   meetingEventDetail: MeetingEvent[];
 
   @ManyToOne(() => Floor, (floor) => floor.floor, {

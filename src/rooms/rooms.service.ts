@@ -223,7 +223,18 @@ export class RoomsService {
   }
 
   async remove(id: number) {
-    return await this.repo.delete(id);
+    this.logger.log(`Fn: ${this.remove.name}, Params: ${id}
+    `);
+    let res;
+    try {
+      const found = await this.repo.findOne({ where: { id } });
+      res = await this.repo.remove(found);
+    } catch (error) {
+      this.logger.error(`Fn: ${this.remove.name}, Params: ${id}
+      `);
+      throw new BadRequestException(error);
+    }
+    return res;
   }
 
   parseQueryString(q: ListQueryParamsRoomDTO): ListBasicOperationRoom {

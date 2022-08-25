@@ -54,7 +54,9 @@ export class MeetingEvent {
   @JoinColumn({ name: 'createdBy' })
   staffContactDetail: StaffContact;
 
-  @ManyToOne(() => Room, (_room) => _room.id)
+  @ManyToOne(() => Room, (_room) => _room.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'roomId' })
   room: Room;
 }
