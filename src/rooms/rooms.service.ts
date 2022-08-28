@@ -102,6 +102,7 @@ export class RoomsService {
       this.config.get('apiAssetURL') +
       `${createRoomDto.image.path}`.replace('upload', '');
     newRoom.createdBy = admin.id;
+    newRoom.capacity = createRoomDto.capacity;
 
     try {
       await this.repo.save(newRoom);
@@ -201,13 +202,10 @@ export class RoomsService {
       newRoom = await this.findOne(id);
       if (!newRoom) throw new NotFoundException();
 
-      newRoom.name = updateRoomDto.name;
-      newRoom.imageUrl = updateRoomDto.image;
-      newRoom.floor = updateRoomDto.floor;
-      newRoom.description = updateRoomDto.description;
+      const newRoomAfterUpdate = Object.assign(newRoom, updateRoomDto);
 
       if (updateRoomDto.image) {
-        newRoom.imageUrl =
+        newRoomAfterUpdate.imageUrl =
           this.config.get('apiAssetURL') +
           `${updateRoomDto.image.path}`.replace('upload', '');
       }

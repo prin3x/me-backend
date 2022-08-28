@@ -1,4 +1,5 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateRoomDto {
   image: any;
@@ -11,4 +12,8 @@ export class CreateRoomDto {
 
   @IsString()
   floor: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  capacity: number;
 }
