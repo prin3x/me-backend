@@ -81,7 +81,7 @@ export class StaffContactsService {
     staffInstance.nickname = createStaffContactDto.nickname;
     staffInstance.birthDate = createStaffContactDto.birthDate;
     staffInstance.staffId = createStaffContactDto.staffId;
-    staffInstance.section = createStaffContactDto.section;
+    staffInstance.division = createStaffContactDto.division;
     staffInstance.position = createStaffContactDto.position;
     staffInstance.hash = await bcrypt.hash('123456', 3);
     staffInstance.profilePicUrl = '';
@@ -259,6 +259,40 @@ export class StaffContactsService {
 
     try {
       const staffTarget = await this.findOne(`${id}`);
+
+      if (!staffTarget) throw new NotFoundException('No staff id found');
+
+      const newStaffInformation = Object.assign(
+        staffTarget,
+        updateStaffContactDto,
+      );
+
+      if (updateStaffContactDto.profilePicUrl) {
+        newStaffInformation.profilePicUrl = updateStaffContactDto.profilePicUrl;
+      } else if (updateStaffContactDto.image) {
+        newStaffInformation.profilePicUrl =
+          this.config.get('apiAssetURL') +
+          `${updateStaffContactDto.image.path}`.replace('upload', '');
+      }
+
+      res = await this.repo.save(newStaffInformation);
+    } catch (e) {
+      this.logger.error(`Fn: ${this.update.name}`);
+      throw Error(e);
+    }
+
+    return res;
+  }
+
+  async updateByEmail(
+    email: string,
+    updateStaffContactDto: UpdateStaffContactDto,
+  ) {
+    this.logger.log(`Fn: ${this.update.name}`);
+    let res;
+
+    try {
+      const staffTarget = await this.findOneByEmail(`${email}`);
 
       if (!staffTarget) throw new NotFoundException('No staff id found');
 

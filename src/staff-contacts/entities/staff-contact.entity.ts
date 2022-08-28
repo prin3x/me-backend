@@ -54,9 +54,6 @@ export class StaffContact {
   @Column({ default: '' })
   staffId: string;
 
-  @Column({ default: '' })
-  section: string;
-
   @Column({ default: CONTACT_STATUS.ENABLED })
   status: CONTACT_STATUS;
 

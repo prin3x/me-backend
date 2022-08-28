@@ -98,6 +98,21 @@ export class StaffContactsController {
     return this.staffContactsService.update(+id, set);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch('/email/:email')
+  @UseInterceptors(FileInterceptor('image'))
+  updateByEmail(
+    @UploadedFile() image: Express.Multer.File,
+    @Param('email') email: string,
+    @Body() updateStaffContactDto: UpdateStaffContactDto,
+  ) {
+    const set: UpdateStaffContactDto = {
+      ...updateStaffContactDto,
+      image,
+    };
+    return this.staffContactsService.updateByEmail(email, set);
+  }
+
   @Roles(['admin'])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/:id')
