@@ -43,8 +43,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   checkAuthUser(@AuthPayload() user: IAuthPayload) {
     if (!user) throw new UnauthorizedException('No required information');
-    const res = this.authService.checkExpiry(user);
-    return res;
+    return user;
   }
 
   @Post('/checktoken')
@@ -55,7 +54,13 @@ export class AuthController {
 
   @Post('/change-password')
   @UseGuards(JwtAuthGuard)
-  changePassword(@Body() user) {
-    return this.authService.changePassword(user);
+  changePassword(@Body() user, @AuthPayload() requestor: IAuthPayload) {
+    return this.authService.changePassword(user, requestor);
+  }
+
+  @Post('/reset-password')
+  @UseGuards(JwtAuthGuard)
+  resetPassword(@Body('id') id: string) {
+    return this.authService.resetPassword(id);
   }
 }

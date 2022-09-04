@@ -35,7 +35,17 @@ export class FloorService {
     return res;
   }
 
-  async findOne(floor: string) {
+  async findOne(id: string) {
+    let res: Floor;
+    try {
+      res = await this.repo.findOne({ where: { id: `${id}` } });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+    return res;
+  }
+
+  async findOneByFloorName(floor: string) {
     let res: Floor;
     try {
       res = await this.repo.findOne({ where: { floor: `${floor}` } });
@@ -45,9 +55,9 @@ export class FloorService {
     return res;
   }
 
-  async update(floor: string, updateFloorDto: UpdateFloorDto) {
+  async update(id: string, updateFloorDto: UpdateFloorDto) {
     let res: Floor;
-    const floorInstance = this.repo.findOne({ where: { floor: `${floor}` } });
+    const floorInstance = this.repo.findOne({ where: { id: `${id}` } });
     const updatedFloor = Object.assign(floorInstance, updateFloorDto);
     try {
       res = await this.repo.save(updatedFloor);
@@ -57,11 +67,11 @@ export class FloorService {
     return res;
   }
 
-  async remove(floor: string) {
-    this.logger.log(floor);
+  async remove(id: string) {
+    this.logger.log(id);
     let res;
     try {
-      const found = await this.repo.findOne({ where: { floor: `${floor}` } });
+      const found = await this.repo.findOne({ where: { id: `${id}` } });
       res = await this.repo.remove(found);
     } catch (error) {
       throw new BadRequestException(error);

@@ -8,5 +8,6 @@ import { Floor } from './entities/floor.entity';
   imports: [TypeOrmModule.forFeature([Floor])],
   controllers: [FloorController],
   providers: [FloorService],
+  exports: [FloorService],
 })
 export class FloorModule {}

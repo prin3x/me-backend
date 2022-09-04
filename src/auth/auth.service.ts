@@ -57,13 +57,15 @@ export class AuthService {
           id: _admin.id,
           role: _admin.role,
         };
+        return {
+          accessToken: this.jwtService.sign(payload),
+        };
+      } else {
+        throw new UnauthorizedException('Unable to login admin');
       }
     } catch (e) {
-      throw new UnauthorizedException('Unable to login user');
+      throw new UnauthorizedException('Unable to login admin');
     }
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
   }
 
   async registerAdmin(user: any) {
@@ -100,6 +102,7 @@ export class AuthService {
     } catch (e) {
       throw new UnauthorizedException('Unable to login user');
     }
+
     return {
       accessToken: this.jwtService.sign(payload),
     };
@@ -107,17 +110,12 @@ export class AuthService {
 
   async checkExpiry(user: IAuthPayload) {
     try {
-      // const pastFifteenMin = user.iat * 1000 + 1000 * 60 * 15;
-      // if (pastFifteenMin < new Date().getTime()) {
-      //   throw new UnauthorizedException('Reach time limit please login again');
-      // }
-
       return {
         accessToken: this.jwtService.sign(
           { ...user },
           {
             secret: this.config.get<string>('jwt.jwtSecret'),
-            expiresIn: 10 * 60 + 's',
+            expiresIn: 12 + 'h',
           },
         ),
       };
@@ -140,9 +138,16 @@ export class AuthService {
     }
   }
 
-  async changePassword(user: any) {
-    const _user = await this.staffService.findOneByEmail(user.email);
-    return await this.staffService.changePassword(_user.id, user.newPassword);
+  async changePassword(user: any, requestor: IAuthPayload) {
+    const _user = await this.staffService.findOne(requestor.id.toString());
+    const isValid = await this.staffService.comparePassword(
+      user.password,
+      _user.hash,
+    );
+
+    if (!isValid) throw new UnauthorizedException('Unable to login user');
+
+    return await this.staffService.changePassword(_user, user.newPassword);
   }
 
   async createAccessTokenFromRefreshToken(refreshToken: string) {
@@ -191,5 +196,9 @@ export class AuthService {
 
   async removeRefreshToken(email: string) {
     return this.staffService.removeRefreshToken(email);
+  }
+
+  async resetPassword(id: string) {
+    return this.staffService.resetPassword(id);
   }
 }

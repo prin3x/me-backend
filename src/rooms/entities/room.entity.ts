@@ -54,9 +54,9 @@ export class Room {
   })
   meetingEventDetail: MeetingEvent[];
 
-  @ManyToOne(() => Floor, (floor) => floor.floor, {
+  @ManyToOne(() => Floor, (floor) => floor.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'floor' })
+  @JoinColumn()
   floorDetails: string;
 }

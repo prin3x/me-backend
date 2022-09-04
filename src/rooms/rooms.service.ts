@@ -16,6 +16,7 @@ import { Room, ROOM_STATUS } from './entities/room.entity';
 import { RTN_MODEL } from 'utils/rtn.model';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { ConfigService } from '@nestjs/config';
+import { FloorService } from 'floor/floor.service';
 
 @Injectable()
 export class RoomsService {
@@ -24,6 +25,7 @@ export class RoomsService {
     @InjectRepository(Room)
     private repo: Repository<Room>,
     private config: ConfigService,
+    private floorService: FloorService,
   ) {}
 
   async updateStatus(_id: number, _updateRoomDto: UpdateRoomStatusDto) {
@@ -105,6 +107,10 @@ export class RoomsService {
     newRoom.capacity = createRoomDto.capacity;
 
     try {
+      const floorDetails = await this.floorService.findOneByFloorName(
+        createRoomDto.floor,
+      );
+      newRoom.floorDetails = floorDetails.id;
       await this.repo.save(newRoom);
     } catch (e) {
       this.logger
@@ -201,6 +207,12 @@ export class RoomsService {
     try {
       newRoom = await this.findOne(id);
       if (!newRoom) throw new NotFoundException();
+
+      const floorDetails = await this.floorService.findOneByFloorName(
+        updateRoomDto.floor,
+      );
+
+      newRoom.floorDetails = floorDetails.id;
 
       const newRoomAfterUpdate = Object.assign(newRoom, updateRoomDto);
 

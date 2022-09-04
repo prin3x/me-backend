@@ -1,5 +1,6 @@
 import { Room } from 'rooms/entities/room.entity';
 import {
+  Column,
   CreateDateColumn,
   Entity,
   OneToMany,
@@ -10,6 +11,9 @@ import {
 @Entity('floor')
 export class Floor {
   @PrimaryGeneratedColumn()
+  id: string;
+
+  @Column({ default: '' })
   floor: string;
 
   @CreateDateColumn()

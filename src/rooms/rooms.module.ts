@@ -7,6 +7,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
+import { FloorModule } from 'floor/floor.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { v4 as uuid } from 'uuid';
         }),
       }),
     }),
+    FloorModule,
   ],
   controllers: [RoomsController],
   providers: [RoomsService],

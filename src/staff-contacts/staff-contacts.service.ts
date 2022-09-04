@@ -26,6 +26,7 @@ import { CompanyService } from 'company/company.service';
 import { Company } from 'company/entities/company.entity';
 import { Department } from 'department/entities/department.entity';
 import { Division } from 'division/entities/division.entity';
+import { User } from 'users/entities/user.entity';
 
 @Injectable()
 export class StaffContactsService {
@@ -240,8 +241,10 @@ export class StaffContactsService {
     let res,
       rtn = false;
 
+    const n = await bcrypt.hash(password, 3);
+
     try {
-      res = await bcrypt.compare(password, hash);
+      res = await bcrypt.compareSync(password, hash);
       if (res) {
         rtn = true;
       }
@@ -318,16 +321,14 @@ export class StaffContactsService {
     return res;
   }
 
-  async changePassword(id: number, hash: string) {
-    this.logger.log(`Fn: ${this.changePassword.name}`);
+  async changePassword(_user: StaffContact, newPassword: string) {
+    this.logger.log(`Fn: ${this.changePassword.name}, ${_user.email}`);
     let res;
 
-    const staffContactInstance = new StaffContact();
-    staffContactInstance.id = id;
-    staffContactInstance.hash = await bcrypt.hash(hash, 3);
+    const newHash = await bcrypt.hash(newPassword, 3);
 
     try {
-      res = await this.repo.save(staffContactInstance);
+      res = await this.repo.save(Object.assign(_user, { hash: newHash }));
     } catch (e) {
       this.logger.error(`Fn: ${this.changePassword.name}`);
       throw Error(e);
@@ -382,6 +383,24 @@ export class StaffContactsService {
     return await this.repo.update(userId, {
       refreshToken: currentHashedRefreshToken,
     });
+  }
+
+  async resetPassword(id: string) {
+    let res: StaffContact;
+    try {
+      const staff = await this.findOne(id);
+
+      if (staff) {
+        staff.hash = await bcrypt.hash('123456', 3);
+      }
+
+      res = await this.repo.save(staff);
+    } catch (e) {
+      this.logger.error(`Fn: ${this.resetPassword.name}`);
+      throw Error(e);
+    }
+
+    return res;
   }
 
   async removeRefreshToken(email: string) {
