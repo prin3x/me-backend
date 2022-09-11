@@ -164,25 +164,26 @@ export class StaffContactsService {
   }
 
   async findAllBirthday(opt: ListBasicOperationContact) {
-    this.logger.log(`Fn: ${this.findAllBirthday.name}`);
+    this.logger.log(`Fn: ${this.findAllBirthday.name}, ${JSON.stringify(opt)}`);
     let res;
 
     const month = moment(opt.startDate).month() + 1;
     const department = opt.department || '';
     try {
-      res = await this.repo
-        .createQueryBuilder('StaffContact')
-        // .where('StaffContact.name LIKE :name', { name: `%${opt.search}%` })
-        .where('MONTH(StaffContact.birthDate) = :month', {
+      const query = this.repo.createQueryBuilder('StaffContact');
+
+      if (!isNaN(month)) {
+        query.where('MONTH(StaffContact.birthDate) = :month', {
           month,
-        })
-        .andWhere('StaffContact.department LIKE :department', {
-          department: `%${department}%`,
-        })
-        .skip(opt.skip)
-        .take(opt.limit)
-        .orderBy('StaffContact.birthDate', 'ASC')
-        .getManyAndCount();
+        });
+      }
+      query.andWhere('StaffContact.department LIKE :department', {
+        department: `%${department}%`,
+      });
+      query.skip(opt.skip);
+      query.take(opt.limit);
+      query.orderBy('StaffContact.birthDate', 'ASC');
+      res = await query.getManyAndCount();
     } catch (e) {
       this.logger.error(`Fn: ${this.findAllBirthday.name}`);
       throw new BadRequestException(e);
