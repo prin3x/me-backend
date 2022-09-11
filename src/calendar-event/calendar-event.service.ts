@@ -79,7 +79,7 @@ export class CalendarEventService {
         bd = bd.join('-');
         return {
           id: nanoid(),
-          title: `วันเกิด ${_item.nickname} - ${_item.section}`,
+          title: `${_item.nickname} - ${_item.division}`,
           staffId: _item.id,
           description: '',
           start: bd,
