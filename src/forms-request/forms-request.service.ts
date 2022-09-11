@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import { FormsRequestCategory } from 'forms-request-categories/entities/forms-request-category.entity';
 import { FormsRequestCategoriesService } from 'forms-request-categories/forms-request-categories.service';
-import { UpdateServiceContactDto } from 'service-contact/dto/update-service-contact.dto';
 import { Repository } from 'typeorm';
 import { CreateFormsRequestDto } from './dto/create-forms-request.dto';
 import { UpdateFormsRequestDto } from './dto/update-forms-request.dto';
@@ -110,7 +109,9 @@ export class FormsRequestService {
     id: string,
     categoryDto: UpdateFormsRequestDto,
   ): Promise<Response> {
-    this.logger.log(`Fn: ${this.update.name}, Params: ${id}
+    this.logger.log(`Fn: ${this.update.name}, Params: ${id}, ${JSON.stringify(
+      categoryDto,
+    )}
     `);
     let serviceContact;
     try {
