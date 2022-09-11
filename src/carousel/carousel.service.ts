@@ -33,19 +33,19 @@ export class CarouselService {
   ) {
     let res;
 
-    const newsInsance = new Carousel();
-    newsInsance.title = createCarouselDto.title;
-    newsInsance.linkOut = createCarouselDto.linkOut;
-    newsInsance.adminId = authPayload.id;
+    const carousel = new Carousel();
+    carousel.title = createCarouselDto.title;
+    carousel.linkOut = createCarouselDto.linkOut;
+    carousel.adminId = authPayload.username;
 
     if (createCarouselDto.image) {
-      newsInsance.imageUrl =
+      carousel.imageUrl =
         this.config.get('apiAssetURL') +
         createCarouselDto?.image?.path.replace('upload', '');
     }
 
     try {
-      res = await this.repo.save(newsInsance);
+      res = await this.repo.save(carousel);
     } catch (e) {
       throw Error(e);
     }
@@ -159,11 +159,16 @@ export class CarouselService {
     return res;
   }
 
-  async update(id: number, updateCarouselDto: UpdateCarouselDto) {
+  async update(
+    id: number,
+    updateCarouselDto: UpdateCarouselDto,
+    authPayload: IAuthPayload,
+  ) {
     let res;
 
     const carousel = await this.findOne(id);
     carousel.status = updateCarouselDto.status;
+    carousel.adminId = authPayload.username;
 
     try {
       const carouselTarget = await this.findOne(id);

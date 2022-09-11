@@ -1,7 +1,10 @@
+import { Admin } from 'admins/entities/admin.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,7 +33,7 @@ export class Carousel {
   status: CAROUSEL_STATUS;
 
   @Column()
-  adminId: number;
+  adminId: string;
 
   @CreateDateColumn()
   createdDate: Date;

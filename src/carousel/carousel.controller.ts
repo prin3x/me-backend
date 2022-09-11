@@ -76,9 +76,10 @@ export class CarouselController {
     @UploadedFile() image: Express.Multer.File,
     @Param('id') id: string,
     @Body() updateCarouselDto: UpdateCarouselDto,
+    @AuthPayload() admin: IAuthPayload,
   ) {
     updateCarouselDto.image = image;
-    return this.carouselService.update(+id, updateCarouselDto);
+    return this.carouselService.update(+id, updateCarouselDto, admin);
   }
 
   @Roles(['admin'])

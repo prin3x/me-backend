@@ -33,8 +33,8 @@ export class FormsRequestService {
         .createQueryBuilder('serviceContact')
         .leftJoin(
           FormsRequestCategory,
-          'serviceCategory',
-          'serviceCategory.id = serviceContact.categoryId',
+          'formRequest',
+          'formRequest.id = serviceContact.categoryId',
         )
         .getMany();
     } catch (e) {
