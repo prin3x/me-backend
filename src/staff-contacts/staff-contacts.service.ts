@@ -298,7 +298,7 @@ export class StaffContactsService {
     try {
       const staffTarget = await this.findOneByEmail(`${email}`);
 
-      if (!staffTarget) throw new NotFoundException(`No staff email found, ${email}`);
+      if (!staffTarget) return;
 
       const newStaffInformation = Object.assign(
         staffTarget,
