@@ -22,7 +22,7 @@ import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('staff-contacts')
 export class StaffContactsController {
   constructor(private readonly staffContactsService: StaffContactsService) {}
@@ -98,7 +98,7 @@ export class StaffContactsController {
     return this.staffContactsService.update(+id, set);
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch('/email/:email')
   @UseInterceptors(FileInterceptor('image'))
   updateByEmail(
