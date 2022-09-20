@@ -80,9 +80,10 @@ export class StaffContactsService {
     staffInstance.name = createStaffContactDto.name;
     staffInstance.nameTH = createStaffContactDto.nameTH;
     staffInstance.nickname = createStaffContactDto.nickname;
-    staffInstance.birthDate = moment(
-      createStaffContactDto.birthDate,
-    ).toISOString();
+    staffInstance.birthDate = moment(createStaffContactDto.birthDate)
+      .utcOffset(0)
+      .set({ hour: 0, minute: 0, second: 0, millisecond: 0, year: 2001 })
+      .toISOString();
     staffInstance.staffId = createStaffContactDto.staffId;
     staffInstance.division = createStaffContactDto.division;
     staffInstance.position = createStaffContactDto.position;
@@ -271,7 +272,12 @@ export class StaffContactsService {
       const newStaffInformation = Object.assign(
         staffTarget,
         updateStaffContactDto,
-        { birthDate: moment(updateStaffContactDto.birthDate).toISOString() },
+        {
+          birthDate: moment(updateStaffContactDto.birthDate)
+            .utcOffset(0)
+            .set({ hour: 0, minute: 0, second: 0, millisecond: 0, year: 2001 })
+            .toISOString(),
+        },
       );
 
       if (updateStaffContactDto.profilePicUrl) {
