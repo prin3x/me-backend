@@ -269,6 +269,7 @@ export class StaffContactsService {
       const newStaffInformation = Object.assign(
         staffTarget,
         updateStaffContactDto,
+        { birthDate: moment(updateStaffContactDto.birthDate).toISOString() },
       );
 
       if (updateStaffContactDto.profilePicUrl) {
