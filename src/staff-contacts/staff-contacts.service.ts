@@ -80,7 +80,9 @@ export class StaffContactsService {
     staffInstance.name = createStaffContactDto.name;
     staffInstance.nameTH = createStaffContactDto.nameTH;
     staffInstance.nickname = createStaffContactDto.nickname;
-    staffInstance.birthDate = createStaffContactDto.birthDate;
+    staffInstance.birthDate = moment(
+      createStaffContactDto.birthDate,
+    ).toISOString();
     staffInstance.staffId = createStaffContactDto.staffId;
     staffInstance.division = createStaffContactDto.division;
     staffInstance.position = createStaffContactDto.position;
