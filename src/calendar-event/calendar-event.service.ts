@@ -15,7 +15,7 @@ import { nanoid } from 'nanoid';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { IAuthPayload } from 'auth/auth.decorator';
-import moment from 'moment';
+
 import {
   ListQueryCalendarByCategoryDTO,
   ListQueryStringByCategory,
@@ -109,7 +109,7 @@ export class CalendarEventService {
         rfe = await this.repo.find({
           where: {
             start: MoreThan(new Date('2022-01-01')),
-            end: LessThan(new Date(opt.year + '-12-31')),
+            end: LessThan(new Date(parseInt(opt.year) + 1 + '-01-01')),
             categoryName: opt.category,
           },
           skip: opt.skip,
@@ -133,7 +133,7 @@ export class CalendarEventService {
       if (opt.category === 'birthday') {
         const set = {} as any;
         set.startDate = opt.year + '-01-01';
-        set.endDate = opt.year + '-12-31';
+        set.endDate = opt.year + 1 + '-01-01';
         rtc = await this.contactService.findAllBirthdayWithoutMonth(set);
         const tempRtc = rtc?.items.map((_item) => {
           let bd = _item.birthDate.split('-');
