@@ -112,8 +112,8 @@ export class MeetingEventsService {
   async findAll(opt: ListQueryMeetingDTO) {
     return await this.repo.find({
       where: {
-        start: MoreThan(opt.startDate),
-        end: LessThan(opt.endDate),
+        start: MoreThanOrEqual(opt.startDate),
+        end: LessThanOrEqual(moment(opt.endDate).add(1, 'days').toDate()),
       },
       relations: ['staffContactDetail'],
     });

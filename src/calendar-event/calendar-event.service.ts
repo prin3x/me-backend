@@ -8,7 +8,7 @@ import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { CalendarEvent } from './entities/calendar-event.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, MoreThan, Repository } from 'typeorm';
+import { In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { ListQueryCalendarDTO } from 'app.dto';
 import { StaffContactsService } from 'staff-contacts/staff-contacts.service';
 import { nanoid } from 'nanoid';
@@ -20,6 +20,7 @@ import {
   ListQueryCalendarByCategoryDTO,
   ListQueryStringByCategory,
 } from './dto/find-event.dto';
+import moment from 'moment';
 
 export interface HolidaysData {
   HolidayWeekDay: string;
@@ -66,8 +67,8 @@ export class CalendarEventService {
     try {
       rfe = await this.repo.find({
         where: {
-          start: MoreThan(opt.startDate),
-          end: LessThan(opt.endDate),
+          start: MoreThanOrEqual(opt.startDate),
+          end: LessThanOrEqual(moment(opt.endDate).add(1, 'days').toDate()),
         },
       });
       const set = {} as any;
