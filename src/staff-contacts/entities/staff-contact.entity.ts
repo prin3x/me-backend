@@ -75,6 +75,7 @@ export class StaffContact {
   @OneToMany(
     () => MeetingEvent,
     (_meetingEvent) => _meetingEvent.staffContactDetail,
+    { onDelete: 'CASCADE' },
   )
   meetingEvent: MeetingEvent[];
 
