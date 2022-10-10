@@ -91,18 +91,18 @@ export class MeetingEventsService {
       roomId,
     });
     query
-      .where('meeting.start <= :start AND meeting.end >= :end', {
+      .where('meeting.start < :start AND meeting.end > :end', {
         start: start,
         end: end,
       })
-      .orWhere('meeting.start >= :start AND meeting.end <= :end', {
+      .orWhere('meeting.start > :start AND meeting.end < :end', {
         start: start,
         end: end,
       })
-      .orWhere('meeting.start <= :start AND meeting.end >= :start', {
+      .orWhere('meeting.start < :start AND meeting.end > :start', {
         start: start,
       })
-      .orWhere('meeting.start >= :end AND meeting.end <= :end', {
+      .orWhere('meeting.start > :end AND meeting.end < :end', {
         end: end,
       });
 
