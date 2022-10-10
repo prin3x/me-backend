@@ -104,6 +104,10 @@ export class MeetingEventsService {
       })
       .orWhere('meeting.start > :end AND meeting.end < :end', {
         end: end,
+      })
+      .orWhere('meeting.start = :start AND meeting.end = :end', {
+        start: start,
+        end: end,
       });
 
     return await query.getOne();
