@@ -34,7 +34,9 @@ export class MeetingEventsService {
     auth: IAuthPayload,
   ) {
     this.logger.log(
-      `Fn: ${this.create.name}, Params: ${createMeetingEventDto.title}, Auth: ${auth.id}`,
+      `Fn: ${this.create.name}, Params: ${createMeetingEventDto.title}, Auth: ${
+        auth.id
+      } ${JSON.stringify(createMeetingEventDto)}`,
     );
     const newEvent = new MeetingEvent();
     newEvent.title = createMeetingEventDto.title;
@@ -181,7 +183,9 @@ export class MeetingEventsService {
     user: IAuthPayload,
   ) {
     this.logger.log(
-      `Fn: ${this.update.name}, Auth: ${user.id}, booking id: ${id}`,
+      `Fn: ${this.update.name}, Auth: ${
+        user.id
+      }, booking id: ${id} , ${JSON.stringify(updateMeetingEventDto)}`,
     );
     let newEvent;
     try {
