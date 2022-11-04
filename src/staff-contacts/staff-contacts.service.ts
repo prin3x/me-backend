@@ -26,7 +26,6 @@ import { CompanyService } from 'company/company.service';
 import { Company } from 'company/entities/company.entity';
 import { Department } from 'department/entities/department.entity';
 import { Division } from 'division/entities/division.entity';
-import { User } from 'users/entities/user.entity';
 
 @Injectable()
 export class StaffContactsService {

@@ -8,13 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import * as moment from 'moment';
 import { RoomsService } from 'rooms/rooms.service';
-import {
-  LessThan,
-  LessThanOrEqual,
-  MoreThan,
-  MoreThanOrEqual,
-  Repository,
-} from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateMeetingEventDto } from './dto/create-meeting-event.dto';
 import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 import { UpdateMeetingEventDto } from './dto/update-meeting-event.dto';

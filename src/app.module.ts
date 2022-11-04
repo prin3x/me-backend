@@ -68,7 +68,7 @@ import { UploadModule } from './upload/upload.module';
         password: configService.get('database.password'),
         database: configService.get('database.database'),
         timezone: 'Z',
-        synchronize: true,
+        synchronize: false,
         entities: [
           Admin,
           Post,
