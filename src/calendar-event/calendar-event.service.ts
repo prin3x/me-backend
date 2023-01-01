@@ -116,7 +116,7 @@ export class CalendarEventService {
       if (opt.category !== 'birthday') {
         rfe = await this.repo.find({
           where: {
-            start: MoreThan(new Date(`${moment().format('yyyy')}-01-01`)),
+            start: MoreThan(new Date(`${parseInt(opt.year)}-01-01`)),
             end: LessThan(new Date(parseInt(opt.year) + 1 + '-01-01')),
             categoryName: opt.category,
           },
@@ -250,13 +250,12 @@ export class CalendarEventService {
 
     try {
       const query = {
-        year: moment().subtract({ year: 1 }).format('YYYY'),
+        year: moment().format('YYYY'),
         category: 'holiday',
       } as ListQueryCalendarByCategoryDTO;
       const parsedQuery = this.parseQueryString(query);
       allHolidaysThisYear = await this.findFromCategory(parsedQuery);
 
-      console.log(allHolidaysThisYear, 'allHolidaysThisYear');
       const idsToRemove = allHolidaysThisYear.items.map((_item) => _item.id);
 
       if (idsToRemove.length > 0) {
