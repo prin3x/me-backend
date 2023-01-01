@@ -116,7 +116,7 @@ export class CalendarEventService {
       if (opt.category !== 'birthday') {
         rfe = await this.repo.find({
           where: {
-            start: MoreThan(new Date('2022-01-01')),
+            start: MoreThan(new Date(`${moment().format('yyyy')}-01-01`)),
             end: LessThan(new Date(parseInt(opt.year) + 1 + '-01-01')),
             categoryName: opt.category,
           },
@@ -246,19 +246,22 @@ export class CalendarEventService {
     this.logger.log(
       `Fn: ${this.saveHolidays.name}, Params: ${new Date().toISOString()}`,
     );
-    let allHolidaysThisYear = [];
+    let allHolidaysThisYear;
 
     try {
       const query = {
-        year: '2022',
+        year: moment().subtract({ year: 1 }).format('YYYY'),
         category: 'holiday',
       } as ListQueryCalendarByCategoryDTO;
       const parsedQuery = this.parseQueryString(query);
       allHolidaysThisYear = await this.findFromCategory(parsedQuery);
 
-      const idsToRemove = allHolidaysThisYear.map((_item) => _item.id);
+      console.log(allHolidaysThisYear, 'allHolidaysThisYear');
+      const idsToRemove = allHolidaysThisYear.items.map((_item) => _item.id);
 
-      await this.repo.delete({ id: In(idsToRemove) });
+      if (idsToRemove.length > 0) {
+        await this.repo.delete({ id: In(idsToRemove) });
+      }
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -266,16 +269,24 @@ export class CalendarEventService {
     const config = {
       method: 'GET',
       url: 'https://apigw1.bot.or.th/bot/public/financial-institutions-holidays/',
-      qs: { year: '2022' },
+      qs: { year: moment().format('YYYY') },
       headers: {
         'X-IBM-Client-Id': this.config.get('botApiKey'),
         accept: 'application/json',
       },
     };
 
-    const botRes = await axios(config as any)
-      .then((res: any) => res.data)
-      .catch((e) => console.error(e));
+    let botRes;
+    try {
+      botRes = await axios(config as any).then((res: any) => res.data);
+    } catch (error) {
+      this.logger.error(
+        `Fn: ${
+          this.saveHolidays.name
+        }, Params: id => ${new Date().toISOString()}`,
+      );
+      throw new BadRequestException(error);
+    }
 
     const res: HolidaysResponseFromBOT = botRes;
 
@@ -323,7 +334,7 @@ export class CalendarEventService {
       orderBy: q?.orderBy || 'id',
       order: q.order === 'DESC' ? 'DESC' : 'ASC',
       search: q?.search ? q?.search.trim() : '',
-      year: q?.year || '2022',
+      year: q?.year || moment().format('YYYY'),
       category: q?.category || '',
       startDate: undefined,
       endDate: undefined,

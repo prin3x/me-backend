@@ -20,7 +20,7 @@ import { ADMIN_ROLES, RolesGuard } from 'auth/roles.guard';
 import { AuthPayload, IAuthPayload } from 'auth/auth.decorator';
 import { ListQueryCalendarByCategoryDTO } from './dto/find-event.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('calendar-event')
 export class CalendarEventController {
   constructor(private readonly calendarEventService: CalendarEventService) {}
@@ -35,7 +35,7 @@ export class CalendarEventController {
     return this.calendarEventService.create(createCalendarEventDto, admin);
   }
 
-  @Cron('* * * 1 1 *')
+  @Cron('1 1 1 1 *')
   @Post('/holidays')
   createHoliday() {
     return this.calendarEventService.saveHolidays();
