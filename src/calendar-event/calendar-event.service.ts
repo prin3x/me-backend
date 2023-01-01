@@ -250,7 +250,7 @@ export class CalendarEventService {
 
     try {
       const query = {
-        year: moment().format('YYYY'),
+        year: moment().subtract({ year: 1 }).format('YYYY'),
         category: 'holiday',
       } as ListQueryCalendarByCategoryDTO;
       const parsedQuery = this.parseQueryString(query);
