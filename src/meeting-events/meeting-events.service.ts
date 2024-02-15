@@ -80,33 +80,19 @@ export class MeetingEventsService {
     end: string,
     roomId: number,
   ): Promise<MeetingEvent> {
-    start = moment(start).subtract(7, 'h').format('yyyy-MM-DD HH:mm:ss');
-    end = moment(end).subtract(7, 'h').format('yyyy-MM-DD HH:mm:ss');
-    const query = this.repo.createQueryBuilder('meeting');
-    query.where('meeting.roomId = :roomId', {
-      roomId,
-    });
-    query
-      .where('meeting.start < :start AND meeting.end > :end', {
-        start: start,
-        end: end,
-      })
-      .orWhere('meeting.start > :start AND meeting.end < :end', {
-        start: start,
-        end: end,
-      })
-      .orWhere('meeting.start < :start AND meeting.end > :start', {
-        start: start,
-      })
-      .orWhere('meeting.start > :end AND meeting.end < :end', {
-        end: end,
-      })
-      .orWhere('meeting.start = :start AND meeting.end = :end', {
-        start: start,
-        end: end,
-      });
+    start = moment(start).subtract(7, 'h').format('YYYY-MM-DD HH:mm:ss');
+    end = moment(end).subtract(7, 'h').format('YYYY-MM-DD HH:mm:ss');
 
-    return await query.getOne();
+    const query = this.repo.createQueryBuilder('meeting');
+    const result = await query
+      .where('meeting.roomId = :roomId', { roomId })
+      .andWhere(
+        '((meeting.start < :end AND meeting.end > :start) OR (meeting.start > :start AND meeting.end < :end) OR (meeting.start < :start AND meeting.end > :start) OR (meeting.start > :end AND meeting.end < :end) OR (meeting.start = :start AND meeting.end = :end))',
+      )
+      .setParameters({ start, end })
+      .getOne();
+
+    return result;
   }
 
   async findAll(opt: ListQueryMeetingDTO) {
@@ -186,7 +172,6 @@ export class MeetingEventsService {
       newEvent = await this.repo.findOne({
         where: { id },
       });
-      console.log(newEvent, 'newEvent');
       if (!newEvent) throw new NotFoundException('Not found');
 
       newEvent.title = updateMeetingEventDto.title;
