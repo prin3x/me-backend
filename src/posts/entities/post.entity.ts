@@ -38,7 +38,7 @@ export class Post {
   @Column({ default: 0 })
   adminId: number;
 
-  @Column({ type: 'varchar', default: '' })
+  @Column({ type: 'varchar', default: '', length: 1000 })
   description: string;
 
   @Column({ default: 0, type: 'integer' })
