@@ -178,8 +178,18 @@ export class RoomsService {
   }
 
   async findByFloor(_floor: string): Promise<Room[]> {
-    if (_floor === '0') return await this.repo.find();
-    return await this.repo.find({ where: { floor: _floor } });
+    if (_floor === '0')
+      return await this.repo.find({
+        order: {
+          order: 'ASC',
+        },
+      });
+    return await this.repo.find({
+      where: { floor: _floor },
+      order: {
+        order: 'ASC',
+      },
+    });
   }
 
   async findOne(id: number) {
@@ -221,8 +231,9 @@ export class RoomsService {
           this.config.get('apiAssetURL') +
           `${updateRoomDto.image.path}`.replace('upload', '');
       }
+      console.log(newRoomAfterUpdate);
 
-      await this.repo.save(newRoom);
+      await this.repo.save(newRoomAfterUpdate);
     } catch (e) {
       this.logger.error(`Fn: ${this.update.name}, Params: ${id}
       `);

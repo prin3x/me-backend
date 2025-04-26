@@ -7,12 +7,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { IAuthPayload } from 'auth/auth.decorator';
 import * as moment from 'moment';
-import { RoomsService } from 'rooms/rooms.service';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateMeetingEventDto } from './dto/create-meeting-event.dto';
 import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 import { UpdateMeetingEventDto } from './dto/update-meeting-event.dto';
 import { MeetingEvent } from './entities/meeting-event.entity';
+import { StaffContactsService } from '@/staff-contacts/staff-contacts.service';
 
 @Injectable()
 export class MeetingEventsService {
@@ -20,7 +20,7 @@ export class MeetingEventsService {
   constructor(
     @InjectRepository(MeetingEvent)
     private repo: Repository<MeetingEvent>,
-    private roomsService: RoomsService,
+    private staffContactService: StaffContactsService,
   ) {}
 
   async create(
@@ -130,7 +130,7 @@ export class MeetingEventsService {
     return await this.repo.findOne({
       where: { id },
       relations: {
-        roomId: true,
+        room: true,
       },
     });
   }
@@ -145,9 +145,15 @@ export class MeetingEventsService {
           room: true,
         },
       });
+      const creator = await this.staffContactService.findOne(res.createdBy);
       rtn = {
         ...res,
         isOwner: res.createdBy === user.id,
+        creator: {
+          id: creator.id,
+          name: creator.name,
+          nameTH: creator.nameTH,
+        },
       };
     } catch (e) {
       this.logger.error(`Fn: ${this.findOneAndOwner.name}`);

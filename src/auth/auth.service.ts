@@ -51,6 +51,9 @@ export class AuthService {
         _admin.password,
       );
 
+      if (!_admin || !isValid)
+        throw new UnauthorizedException('Unable to login admin');
+
       if (isValid) {
         payload = {
           username: _admin.username,
@@ -90,6 +93,8 @@ export class AuthService {
         user.password,
         _user.hash,
       );
+
+      if (!isValid) throw new UnauthorizedException('Unable to login user');
 
       if (isValid) {
         payload = {

@@ -59,4 +59,7 @@ export class Room {
   })
   @JoinColumn()
   floorDetails: string;
+
+  @Column({ default: 0, nullable: true })
+  order: number;
 }

@@ -55,7 +55,7 @@ export class PostsController {
   }
 
   @Post('/read/:slug')
-  incrementReders(@Query('slug') slug: string) {
+  incrementReders(@Param('slug') slug: string) {
     return this.postsService.incrementReders(slug);
   }
 
