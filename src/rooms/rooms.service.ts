@@ -124,6 +124,7 @@ export class RoomsService {
 
   async findAll(opt: ListBasicOperationRoom): Promise<RTN_MODEL> {
     this.logger.log(`Fn => ${this.findAll.name}`);
+    const skip = (opt.page - 1) * opt.limit;
 
     let res, query;
     try {
@@ -131,7 +132,7 @@ export class RoomsService {
       query.where('(meetingroom.name LIKE :search)', {
         search: `%${opt.search}%`,
       });
-      query.skip(opt.skip).take(opt.limit);
+      query.skip(skip).take(opt.limit);
 
       res = await query.getManyAndCount();
     } catch (e) {
