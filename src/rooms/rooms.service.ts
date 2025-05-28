@@ -132,6 +132,7 @@ export class RoomsService {
       query.where('(meetingroom.name LIKE :search)', {
         search: `%${opt.search}%`,
       });
+      query.orderBy('meetingroom.order', 'ASC');
       query.skip(skip).take(opt.limit);
 
       res = await query.getManyAndCount();
