@@ -56,20 +56,22 @@ export class MeetingEventsService {
     newEvent.createdBy = auth.id;
 
     try {
-      const allRoomThisDay = await this.findInterval(
+      const conflict = await this.findInterval(
         createMeetingEventDto.start,
         createMeetingEventDto.end,
         createMeetingEventDto.roomId,
       );
 
-      if (allRoomThisDay) throw new BadRequestException('Duplicated Booking');
+      if (conflict) throw new BadRequestException('Duplicated Booking');
 
       await this.repo.save(newEvent);
     } catch (e) {
-      this.logger.error(
-        `Fn: ${this.create.name}, Params: ${createMeetingEventDto.title}, Auth: ${auth.id}`,
+      this.logBookingError(
+        this.create.name,
+        e,
+        `title: ${createMeetingEventDto.title}, roomId: ${createMeetingEventDto.roomId}, Auth: ${auth.id}`,
       );
-      throw new BadRequestException(e);
+      throw this.toBookingException(e);
     }
 
     return newEvent;
@@ -79,20 +81,24 @@ export class MeetingEventsService {
     start: string,
     end: string,
     roomId: number,
+    excludeEventId?: number,
   ): Promise<MeetingEvent> {
     start = moment(start).subtract(7, 'h').format('YYYY-MM-DD HH:mm:ss');
     end = moment(end).subtract(7, 'h').format('YYYY-MM-DD HH:mm:ss');
 
     const query = this.repo.createQueryBuilder('meeting');
-    const result = await query
+    query
       .where('meeting.roomId = :roomId', { roomId })
       .andWhere(
         '((meeting.start < :end AND meeting.end > :start) OR (meeting.start > :start AND meeting.end < :end) OR (meeting.start < :start AND meeting.end > :start) OR (meeting.start > :end AND meeting.end < :end) OR (meeting.start = :start AND meeting.end = :end))',
       )
-      .setParameters({ start, end })
-      .getOne();
+      .setParameters({ start, end });
 
-    return result;
+    if (excludeEventId != null) {
+      query.andWhere('meeting.id != :excludeEventId', { excludeEventId });
+    }
+
+    return query.getOne();
   }
 
   async findAll(opt: ListQueryMeetingDTO) {
@@ -182,23 +188,38 @@ export class MeetingEventsService {
 
       newEvent.title = updateMeetingEventDto.title;
       newEvent.description = updateMeetingEventDto.description;
-      newEvent.start = updateMeetingEventDto.start;
-      newEvent.end = updateMeetingEventDto.end;
-      newEvent.roomId = id;
-      newEvent.createdBy = user.id;
-      const allRoomThisDay = await this.findInterval(
+      newEvent.start = updateMeetingEventDto.allDay
+        ? new Date(
+            moment(updateMeetingEventDto.start).startOf('day').toISOString(),
+          )
+        : new Date(updateMeetingEventDto.start);
+      newEvent.end = updateMeetingEventDto.allDay
+        ? new Date(
+            moment(updateMeetingEventDto.start)
+              .endOf('day')
+              .subtract(1, 'm')
+              .toISOString(),
+          )
+        : new Date(updateMeetingEventDto.end);
+      newEvent.type = updateMeetingEventDto.type;
+
+      const conflict = await this.findInterval(
         updateMeetingEventDto.start,
         updateMeetingEventDto.end,
+        newEvent.roomId,
         id,
       );
 
-      if (allRoomThisDay && allRoomThisDay.createdBy !== user.id)
-        throw new BadRequestException('Duplicated Booking');
+      if (conflict) throw new BadRequestException('Duplicated Booking');
 
       await this.repo.save(newEvent);
     } catch (e) {
-      this.logger.error(`Fn: ${this.update.name}, Auth: ${user.id}`);
-      throw new BadRequestException(`${e}`);
+      this.logBookingError(
+        this.update.name,
+        e,
+        `booking id: ${id}, roomId: ${newEvent?.roomId}, Auth: ${user.id}`,
+      );
+      throw this.toBookingException(e);
     }
 
     return newEvent;
@@ -206,5 +227,37 @@ export class MeetingEventsService {
 
   async remove(id: number) {
     return this.repo.delete(id);
+  }
+
+  private logBookingError(fn: string, error: unknown, context: string) {
+    const message = this.getErrorMessage(error);
+    this.logger.error(`Fn: ${fn} failed — ${message}, ${context}`);
+  }
+
+  private toBookingException(error: unknown): BadRequestException {
+    if (error instanceof BadRequestException) return error;
+    if (error instanceof NotFoundException) {
+      return new BadRequestException(this.getErrorMessage(error));
+    }
+    return new BadRequestException(this.getErrorMessage(error));
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof BadRequestException) {
+      const response = error.getResponse();
+      if (typeof response === 'string') return response;
+      if (
+        typeof response === 'object' &&
+        response !== null &&
+        'message' in response
+      ) {
+        const message = (response as { message?: string | string[] }).message;
+        return Array.isArray(message)
+          ? message.join(', ')
+          : message ?? error.message;
+      }
+    }
+    if (error instanceof Error) return error.message;
+    return String(error);
   }
 }
