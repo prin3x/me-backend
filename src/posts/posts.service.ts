@@ -15,6 +15,7 @@ import {
 } from './dto/get-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UpdateStatus } from './dto/update-status.dto';
+import { POST_LIST_SELECT } from 'utils/list-select';
 import { Post, POST_STATUS } from './entities/post.entity';
 
 @Injectable()
@@ -66,6 +67,7 @@ export class PostsService {
     try {
       query = this.repo.createQueryBuilder('posts');
       query
+        .select([...POST_LIST_SELECT])
         .where('(posts.status LIKE :status)', {
           status: `${POST_STATUS.ENABLED}`,
         })
@@ -103,6 +105,7 @@ export class PostsService {
     try {
       query = this.repo.createQueryBuilder('posts');
       query
+        .select([...POST_LIST_SELECT])
         .where('(posts.categoryName LIKE :categoryName)', {
           categoryName: `%${opt.categoryName}%`,
         })
@@ -246,17 +249,8 @@ export class PostsService {
   }
 
   async incrementReders(slug: string) {
-    let res;
-
-    const newsInsance = await this.findOneBySlug(slug);
-    newsInsance.readers += 1;
-
-    try {
-      res = await this.repo.save(newsInsance);
-    } catch (e) {
-      throw Error(e);
-    }
-
+    const res = await this.repo.increment({ slug }, 'readers', 1);
+    if (!res.affected) throw new NotFoundException('Slug Not Found');
     return res;
   }
 

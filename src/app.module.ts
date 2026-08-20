@@ -70,6 +70,10 @@ import { UsersModule } from './users/users.module';
         database: configService.get('database.database'),
         timezone: 'Z',
         synchronize: false,
+        extra: {
+          // ponytail: mysql pool cap, raise if connections wait
+          connectionLimit: 10,
+        },
         entities: [
           Admin,
           Post,

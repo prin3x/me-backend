@@ -1,5 +1,6 @@
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { DataSource } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 import { Admin } from '../admins/entities/admin.entity';
 import { Post } from '../posts/entities/post.entity';
 import { CalendarEvent } from '../calendar-event/entities/calendar-event.entity';
@@ -20,15 +21,29 @@ import { Division } from '../division/entities/division.entity';
 import { Tag } from '../tags/entities/tag.entity';
 import { Floor } from '../floor/entities/floor.entity';
 
-const configService = new ConfigService();
+try {
+  for (const line of readFileSync(resolve(process.cwd(), '.env'), 'utf8').split(
+    '\n',
+  )) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq < 1) continue;
+    const key = trimmed.slice(0, eq);
+    const val = trimmed.slice(eq + 1);
+    if (process.env[key] === undefined) process.env[key] = val;
+  }
+} catch {
+  // env already set in process
+}
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
-  host: configService.get('database.host'),
-  port: configService.get('database.port'),
-  username: configService.get('database.user'),
-  password: configService.get('database.password'),
-  database: configService.get('database.database'),
+  host: process.env.MYSQL_HOST,
+  port: parseInt(process.env.MYSQL_PORT, 10) || 3306,
+  username: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
   entities: [
     Admin,
     Post,
@@ -52,6 +67,6 @@ export const AppDataSource = new DataSource({
   ],
   migrations: ['src/migrations/*.ts'],
   migrationsTableName: 'migrations',
-  synchronize: true,
+  synchronize: false,
   logging: true,
 });

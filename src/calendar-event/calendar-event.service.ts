@@ -127,13 +127,11 @@ export class CalendarEventService {
           },
         });
 
-        const totalFounds = await this.repo.find({
+        total = await this.repo.count({
           where: {
             categoryName: opt.category,
           },
         });
-
-        total = totalFounds.length;
 
         rtn = [...rfe];
       }

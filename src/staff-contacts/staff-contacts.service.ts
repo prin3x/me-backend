@@ -26,6 +26,7 @@ import { CompanyService } from 'company/company.service';
 import { Company } from 'company/entities/company.entity';
 import { Department } from 'department/entities/department.entity';
 import { Division } from 'division/entities/division.entity';
+import { STAFF_LIST_SELECT } from 'utils/list-select';
 
 @Injectable()
 export class StaffContactsService {
@@ -136,6 +137,7 @@ export class StaffContactsService {
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
+        .select([...STAFF_LIST_SELECT])
         .where(
           '(StaffContact.name LIKE :name OR StaffContact.nameTH LIKE :name OR StaffContact.nickname LIKE :name2)',
           { name: `%${opt.search}%`, name2: `%${opt.search}%` },
@@ -173,6 +175,7 @@ export class StaffContactsService {
     const department = opt.department || '';
     try {
       const query = this.repo.createQueryBuilder('StaffContact');
+      query.select([...STAFF_LIST_SELECT]);
 
       if (!isNaN(month)) {
         query.where('MONTH(StaffContact.birthDate) = :month', {
@@ -209,6 +212,7 @@ export class StaffContactsService {
     try {
       res = await this.repo
         .createQueryBuilder('StaffContact')
+        .select([...STAFF_LIST_SELECT])
         .andWhere('StaffContact.department LIKE :department', {
           department: `%${department}%`,
         })
@@ -241,22 +245,12 @@ export class StaffContactsService {
 
   async comparePassword(password: string, hash: string): Promise<boolean> {
     this.logger.log(`Fn: ${this.comparePassword.name}`);
-    let res,
-      rtn = false;
-
-    const n = await bcrypt.hash(password, 3);
-
     try {
-      res = await bcrypt.compareSync(password, hash);
-      if (res) {
-        rtn = true;
-      }
+      return await bcrypt.compare(password, hash);
     } catch (e) {
       this.logger.error(`Fn: ${this.comparePassword.name}`);
       throw new UnauthorizedException('Unable to authorized');
     }
-
-    return rtn;
   }
 
   async update(id: number, updateStaffContactDto: UpdateStaffContactDto) {

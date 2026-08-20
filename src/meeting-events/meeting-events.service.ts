@@ -13,6 +13,7 @@ import { ListQueryMeetingDTO } from './dto/get-meeting-event.dto';
 import { UpdateMeetingEventDto } from './dto/update-meeting-event.dto';
 import { MeetingEvent } from './entities/meeting-event.entity';
 import { StaffContactsService } from '@/staff-contacts/staff-contacts.service';
+import { MEETING_STAFF_SELECT } from 'utils/list-select';
 
 @Injectable()
 export class MeetingEventsService {
@@ -107,7 +108,8 @@ export class MeetingEventsService {
 
     return await this.repo
       .createQueryBuilder('meeting')
-      .leftJoinAndSelect('meeting.staffContactDetail', 'staffContactDetail')
+      .leftJoin('meeting.staffContactDetail', 'staffContactDetail')
+      .addSelect([...MEETING_STAFF_SELECT])
       .where('meeting.start < :rangeEnd', { rangeEnd })
       .andWhere('meeting.end > :rangeStart', { rangeStart })
       .getMany();
