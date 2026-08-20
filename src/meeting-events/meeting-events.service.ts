@@ -102,13 +102,15 @@ export class MeetingEventsService {
   }
 
   async findAll(opt: ListQueryMeetingDTO) {
-    return await this.repo.find({
-      where: {
-        start: MoreThanOrEqual(opt.startDate),
-        end: LessThanOrEqual(moment(opt.endDate).add(1, 'days').toDate()),
-      },
-      relations: ['staffContactDetail'],
-    });
+    const rangeStart = moment(opt.startDate).startOf('day').toDate();
+    const rangeEnd = moment(opt.endDate).endOf('day').toDate();
+
+    return await this.repo
+      .createQueryBuilder('meeting')
+      .leftJoinAndSelect('meeting.staffContactDetail', 'staffContactDetail')
+      .where('meeting.start < :rangeEnd', { rangeEnd })
+      .andWhere('meeting.end > :rangeStart', { rangeStart })
+      .getMany();
   }
 
   async findAvailableTimeIntervalByRoomId(targetDate: string, roomId: number) {
