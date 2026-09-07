@@ -15,7 +15,7 @@ import {
 } from './dto/get-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UpdateStatus } from './dto/update-status.dto';
-import { POST_LIST_SELECT } from 'utils/list-select';
+import { POST_LIST_COLUMNS, POST_LIST_SELECT } from 'utils/list-select';
 import { Post, POST_STATUS } from './entities/post.entity';
 
 @Injectable()
@@ -136,7 +136,10 @@ export class PostsService {
   }
 
   async findByCategoryId(_id: string) {
-    return await this.repo.find({ where: { categoryDetail: +_id } });
+    return await this.repo.find({
+      where: { categoryDetail: +_id },
+      select: [...POST_LIST_COLUMNS],
+    });
   }
 
   async findOneBySlug(slug: string) {
@@ -215,33 +218,27 @@ export class PostsService {
   }
 
   async _enablePost(id: number) {
-    let res;
-
-    const post = await this.findOne(id);
-    post.status = POST_STATUS.ENABLED;
-
-    try {
-      res = await this.repo.save(post);
-    } catch (e) {
-      throw Error(e);
-    }
-
-    return res;
+    return this._setStatus(id, POST_STATUS.ENABLED);
   }
 
   async _disablePost(id: number) {
+    return this._setStatus(id, POST_STATUS.DISABLED);
+  }
+
+  // Targeted UPDATE so toggling status never reads or rewrites the
+  // longtext `content` column.
+  private async _setStatus(id: number, status: POST_STATUS) {
     let res;
 
-    const post = await this.findOne(id);
-    post.status = POST_STATUS.DISABLED;
-
     try {
-      res = await this.repo.save(post);
+      res = await this.repo.update({ id }, { status });
     } catch (e) {
       throw Error(e);
     }
 
-    return res;
+    if (!res.affected) throw new NotFoundException('Post Not Found');
+
+    return { id, status };
   }
 
   async remove(id: number) {

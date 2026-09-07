@@ -1,19 +1,25 @@
-export const POST_LIST_SELECT = [
-  'posts.id',
-  'posts.imageUrl',
-  'posts.homeImageUrl',
-  'posts.title',
-  'posts.status',
-  'posts.adminId',
-  'posts.description',
-  'posts.readers',
-  'posts.categoryName',
-  'posts.postBy',
-  'posts.slug',
-  'posts.tag',
-  'posts.createdDate',
-  'posts.updatedDate',
+// Entity property names. Deliberately omits the `content` longtext column so
+// list payloads stay small; single-post endpoints return it separately.
+export const POST_LIST_COLUMNS = [
+  'id',
+  'imageUrl',
+  'homeImageUrl',
+  'title',
+  'status',
+  'adminId',
+  'description',
+  'readers',
+  'categoryName',
+  'postBy',
+  'slug',
+  'tag',
+  'createdDate',
+  'updatedDate',
 ] as const;
+
+export const POST_LIST_SELECT = POST_LIST_COLUMNS.map(
+  (column) => `posts.${column}`,
+);
 
 export const STAFF_LIST_SELECT = [
   'StaffContact.id',

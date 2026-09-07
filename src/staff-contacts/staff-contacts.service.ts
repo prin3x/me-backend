@@ -46,9 +46,11 @@ export class StaffContactsService {
     let division: Division[] = [];
     let res;
     try {
-      company = await this.companyService.findAll();
-      department = await this.departmentService.findAll();
-      division = await this.divisionService.findAll();
+      [company, department, division] = await Promise.all([
+        this.companyService.findAll(),
+        this.departmentService.findAll(),
+        this.divisionService.findAll(),
+      ]);
 
       res = {
         company,
